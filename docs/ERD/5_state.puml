@@ -1,0 +1,45 @@
+@startuml
+hide empty description
+left to right direction
+skinparam state {
+    BackgroundColor White
+    BorderColor Black
+    ArrowColor Black
+}
+
+[*] --> ChoDuyet : Khách gửi yêu cầu đặt xe
+
+state "Chờ duyệt\n(Pending)" as ChoDuyet
+state "Chờ cọc\n(Wait Deposit)" as ChoCoc
+state "Đã chốt đơn\n(Confirmed)" as DaChot
+state "Đang chạy\n(Active)" as DangChay
+state "Hoàn thành\n(Completed)" as HoanThanh
+state "Đã hủy\n(Cancelled)" as DaHuy
+
+ChoDuyet --> ChoCoc : Chủ xe duyệt giấy tờ hợp lệ
+ChoDuyet --> DaHuy : Chủ xe từ chối / Khách chủ động hủy
+
+ChoCoc --> ChoCoc : Chủ xe từ chối Bill cọc\n(Yêu cầu khách tải lại)
+ChoCoc --> DaChot : Chủ xe xác nhận đã nhận tiền
+ChoCoc --> DaHuy : Quá hạn nộp cọc / Khách hủy
+
+DaChot --> DangChay : Bàn giao xe (Tự lái) / Bắt đầu chuyến (Có tài xế)
+DaChot --> DaHuy : Khách báo hủy (Có xử lý phí cọc)
+
+DangChay --> HoanThanh : Thu hồi xe, kiểm tra & thanh toán
+
+HoanThanh --> [*]
+DaHuy --> [*]
+
+note bottom of DaChot
+  **Phân bổ tài xế:**
+  Nếu là đơn "Có tài xế", việc gán
+  tài xế sẽ diễn ra trong trạng thái này.
+end note
+
+note bottom of HoanThanh
+  Chỉ khi ở trạng thái này,
+  Khách hàng mới được phép 
+  thực hiện chức năng Đánh giá.
+end note
+@enduml

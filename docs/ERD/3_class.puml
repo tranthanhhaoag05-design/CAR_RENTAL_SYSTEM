@@ -1,0 +1,107 @@
+@startuml
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor White
+    BorderColor Black
+    ArrowColor Black
+}
+
+class User <<Base Class>> {
+  # id: int
+  # full_name: string
+  # phone_number: string
+  # password_hash: string
+  # is_active: boolean
+  + login(): boolean
+  + logout(): void
+  + resetPassword(): void
+}
+
+class Customer {
+  - reward_points: int
+  + searchVehicle(): list
+  + createBooking(): void
+  + writeReview(): void
+}
+
+class Driver {
+  - license_class: string
+  - experience_years: int
+  + viewSchedule(): list
+  + acceptTrip(): void
+  + updateTripStatus(): void
+}
+
+class Owner {
+  - business_license: string
+  + approveBooking(): void
+  + assignDriver(): void
+  + verifyPayment(): void
+}
+
+class Admin {
+  - admin_level: int
+  + manageUsers(): void
+  + viewSystemReports(): void
+}
+
+User <|-- Customer
+User <|-- Driver
+User <|-- Owner
+User <|-- Admin
+
+class Vehicle <<Base Class>> {
+  # id: int
+  # plate_number: string
+  # brand: string
+  # price_per_day: int
+  # status: string
+  + checkAvailability(): boolean
+  + updateStatus(): void
+}
+
+class Sedan {
+  - trunk_capacity_liters: int
+  - is_luxury: boolean
+}
+
+class SUV {
+  - has_4wd: boolean
+  - ground_clearance_mm: int
+}
+
+class Van {
+  - passenger_capacity: int
+  - has_sliding_door: boolean
+}
+
+Vehicle <|-- Sedan
+Vehicle <|-- SUV
+Vehicle <|-- Van
+
+class Booking <<Base Class>> {
+  # booking_id: int
+  # start_date: datetime
+  # end_date: datetime
+  # total_price: int
+  # status: string
+  + calculatePrice(): int
+  + cancelBooking(): void
+}
+
+class SelfDriveBooking {
+  - cccd_image_url: string
+  - driver_license_url: string
+  + verifyDocuments(): boolean
+}
+
+class WithDriverBooking {
+  - assigned_driver_id: int
+  - pickup_location: string
+  + checkDriverAvailability(): boolean
+}
+
+Booking <|-- SelfDriveBooking
+Booking <|-- WithDriverBooking
+@enduml

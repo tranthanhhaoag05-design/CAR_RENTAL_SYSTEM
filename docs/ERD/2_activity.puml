@@ -1,0 +1,72 @@
+@startuml
+|Khách hàng|
+start
+:Chọn xe, thời gian & Loại dịch vụ;
+
+|Hệ thống|
+if (Loại dịch vụ?) then (Có tài xế)
+    :Tự động đếm số tài xế rảnh trong Database;
+    if (Còn tài xế?) then (Không)
+        :Báo lỗi "Kín lịch";
+        |Khách hàng|
+        :Đổi ngày hoặc chọn Tự lái;
+        detach
+    else (Còn)
+    endif
+else (Tự lái)
+    |Khách hàng|
+    :Tải lên Bằng lái xe (GPLX) & CCCD;
+endif
+
+|Khách hàng|
+:Bấm nút "Gửi yêu cầu đặt xe";
+
+|Hệ thống|
+:Lưu đơn hàng vào DB\nTrạng thái: "Chờ duyệt";
+:Gửi thông báo cho Chủ xe;
+
+|Chủ xe|
+:Mở Admin Panel kiểm tra đơn;
+if (Giấy tờ/Thông tin hợp lệ?) then (Không)
+    :Bấm "Từ chối";
+    |Hệ thống|
+    :Cập nhật trạng thái: "Đã hủy";
+    :Thông báo cho Khách hàng;
+    stop
+else (Có)
+    |Chủ xe|
+    :Bấm "Duyệt đơn";
+    |Hệ thống|
+    :Cập nhật trạng thái: "Chờ cọc";
+endif
+
+|Khách hàng|
+:Quét QR/Chuyển khoản thủ công;
+
+repeat
+    |Khách hàng|
+    :Tải ảnh chụp màn hình Bill (Minh chứng);
+    
+    |Chủ xe|
+    :Kiểm tra biến động số dư thực tế;
+    
+backward :Bấm "Từ chối cọc"\nKhách kiểm tra & tải lại;
+repeat while (Tiền đã vào tài khoản?) is (Chưa nhận được) not (Đã nhận được)
+
+|Chủ xe|
+:Bấm "Xác nhận đã cọc";
+|Hệ thống|
+:Cập nhật trạng thái: "Đã chốt đơn";
+    
+if (Loại dịch vụ là gì?) then (Có tài xế)
+    |Chủ xe|
+    :Chọn đích danh Tài xế & Gán cuốc;
+    |Hệ thống|
+    :Bắn Noti về App của Tài xế;
+else (Tự lái)
+endif
+
+|Hệ thống|
+:Chuyển đơn sang danh sách chờ Giao xe;
+stop
+@enduml

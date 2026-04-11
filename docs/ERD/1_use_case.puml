@@ -1,0 +1,95 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Khách hàng" as KH
+actor "Chủ xe / Điều hành" as CX
+actor "Tài xế" as TX
+actor "Quản trị viên" as Admin
+
+' Thêm Tác nhân là Hệ thống tự động
+actor "Hệ thống Tự động" as Sys <<System>>
+
+rectangle "Hệ thống Quản lý Thuê Xe" {
+  
+  usecase "Đăng nhập / Đăng ký\n(App/Web Khách)" as UC_LOGIN_WEB
+  usecase "Đăng nhập\n(App Tài xế & Web Quản trị)" as UC_LOGIN_ADMIN
+
+  rectangle "Phân hệ Khách Hàng" {
+    usecase "Tìm kiếm & Xem thông tin xe" as UC1
+    usecase "Chọn loại dịch vụ\n(Tự lái / Có tài xế) & Thời gian" as UC4
+    usecase "Gửi yêu cầu Đặt xe\n& Tải giấy tờ (CCCD, GPLX)" as UC5
+    usecase "Thanh toán tiền cọc" as UC7
+    usecase "Theo dõi trạng thái\n(Chờ duyệt, Giao xe, Đang chạy)" as UC13
+    usecase "Xem lịch sử chuyến đi" as UC9
+    usecase "Đánh giá & Nhận xét" as UC18
+  }
+  
+  rectangle "Xử lý Tự động (Backend)" {
+    usecase "Tự động kiểm tra\ntrạng thái lịch tài xế rảnh" as UC_AUTO_CHECK
+  }
+
+  rectangle "Phân hệ Tài Xế" {
+    usecase "Nhận chuyến & Cập nhật tiến độ" as UC16
+  }
+
+  rectangle "Phân hệ Chủ xe & Admin" {
+    usecase "Duyệt hồ sơ & Xác nhận đặt xe" as UC14
+    usecase "Phân bổ tài xế (Gán cuốc)" as UC17
+    usecase "Quản lý Bàn giao & Thu hồi xe" as UC15
+    usecase "Cấp quyền & Quản lý toàn hệ thống" as UC12
+  }
+}
+
+KH --> UC1
+KH --> UC4
+KH --> UC5
+KH --> UC13
+KH --> UC9
+KH --> UC18
+
+UC4 .> UC_AUTO_CHECK : <<include>>
+Sys --> UC_AUTO_CHECK
+
+UC5 .> UC_LOGIN_WEB : <<include>>
+UC13 .> UC_LOGIN_WEB : <<include>>
+UC9 .> UC_LOGIN_WEB : <<include>>
+UC18 .> UC_LOGIN_WEB : <<include>>
+UC5 .> UC7 : <<include>>
+
+TX --> UC_LOGIN_ADMIN
+TX --> UC16
+
+CX --> UC_LOGIN_ADMIN
+CX --> UC14
+CX --> UC17
+CX --> UC15
+
+Admin --> UC_LOGIN_ADMIN
+Admin --> UC12
+
+note right of UC_AUTO_CHECK
+  **Logic Tự động hóa:**
+  Ngay khi khách hàng chọn ngày/giờ tại UC4, 
+  Hệ thống kiểm tra Database. Nếu hết tài xế:
+  - Nút "Có tài xế" sẽ bị mờ đi.
+  - Báo lỗi kín lịch.
+end note
+
+note right of UC14
+  Chỉ cần kiểm tra tính hợp lệ của bằng lái.
+  Không cần kiểm tra lịch tài xế thủ công.
+end note
+@enduml
+
+# Backend
+backend/.env
+backend/vendor/
+backend/storage/*.key
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Chung
+.DS_Store

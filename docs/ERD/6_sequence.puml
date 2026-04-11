@@ -1,0 +1,61 @@
+@startuml
+autonumber
+skinparam maxMessageSize 150
+skinparam sequence {
+    ParticipantBackgroundColor White
+    ActorBackgroundColor White
+}
+
+actor "Khách Hàng" as KH
+participant "App/Web\n(Frontend)" as UI
+participant "Hệ thống\n(Backend)" as Sys
+database "Database" as DB
+actor "Chủ Xe" as CX
+actor "Tài Xế" as TX
+
+== 1. Tự động kiểm tra lịch tài xế rảnh ==
+KH -> UI: Chọn thời gian & Dịch vụ "Có tài xế"
+UI -> Sys: API: Kiểm tra tài xế rảnh(start_date, end_date)
+Sys -> DB: Truy vấn đếm số lượng tài xế rảnh
+DB --> Sys: Trả kết quả (VD: Còn 2 tài xế)
+Sys --> UI: Trả về trạng thái "Available"
+UI --> KH: Hiển thị form & Mở khóa nút "Đặt xe"
+
+== 2. Tạo đơn & Chủ xe duyệt hồ sơ ==
+KH -> UI: Điền thông tin, tải CCCD & Bấm "Gửi yêu cầu"
+UI -> Sys: API: Tạo Booking mới kèm hình ảnh
+Sys -> DB: Lưu Booking (Status: "Chờ duyệt")
+Sys --> CX: Gửi Noti: "Có đơn đặt xe mới cần duyệt"
+UI --> KH: Hiển thị "Đơn đang chờ duyệt"
+
+CX -> Sys: Mở Admin Panel, xem thông tin & ảnh CCCD
+CX -> Sys: Bấm "Duyệt đơn"
+Sys -> DB: Cập nhật Booking (Status: "Chờ cọc")
+Sys --> UI: Gửi Noti: "Đơn đã duyệt, yêu cầu cọc"
+UI --> KH: Hiển thị màn hình Hướng dẫn chuyển khoản
+
+== 3. Thanh toán cọc thủ công ==
+KH -> UI: Upload ảnh màn hình Bill chuyển khoản
+UI -> Sys: API: Gửi minh chứng cọc
+Sys -> DB: Lưu thông tin bảng Payments
+Sys --> CX: Gửi Noti: "Khách đã tải lên Bill cọc"
+
+note over CX
+  Chủ xe mở App ngân hàng 
+  để tự kiểm tra xem tiền đã vào chưa.
+end note
+
+CX -> Sys: Bấm nút "Xác nhận đã nhận tiền"
+Sys -> DB: Cập nhật Booking (Status: "Đã chốt đơn")
+Sys --> UI: Gửi Noti: "Đặt xe & Cọc thành công"
+
+== 4. Phân bổ & Giao việc cho Tài xế ==
+CX -> Sys: Chọn tài xế A & Bấm "Gán tài xế"
+Sys -> DB: Cập nhật Booking (Thêm driver_id)
+Sys -> DB: Thêm record vào bảng Driver_Schedules
+Sys --> TX: Bắn Noti sang App Tài xế: "Bạn có cuốc xe mới"
+
+TX -> Sys: Mở App, xem chi tiết & Bấm "Xác nhận nhận lịch"
+Sys -> DB: Cập nhật trạng thái xác nhận
+Sys --> CX: Gửi Noti: "Tài xế A đã nhận chuyến"
+@enduml

@@ -1,0 +1,38 @@
+@startuml
+left to right direction
+skinparam rectangle {
+  BackgroundColor White
+  BorderColor Black
+}
+
+actor "Khách Hàng" as KH
+actor "Chủ Xe" as CX
+actor "Tài Xế" as TX
+
+rectangle "Giao diện App/Web" as App
+rectangle "Hệ thống Backend" as Sys
+database "Database" as DB
+rectangle "Admin Panel" as AdminApp
+rectangle "App Tài Xế" as TXApp
+
+KH --> App : 1. Chọn thời gian & "Có tài xế"
+App --> Sys : 2. Yêu cầu kiểm tra lịch tài xế
+Sys --> DB : 3. Truy vấn đếm tài xế rảnh
+DB --> Sys : 4. Trả kết quả (Còn tài xế)
+Sys --> App : 5. Mở khóa nút & Cho phép đặt
+KH --> App : 6. Điền thông tin & Đặt xe
+App --> DB : 7. Lưu đơn hàng mới (Chờ duyệt)
+
+DB --> AdminApp : 8. Thông báo có đơn mới
+CX --> AdminApp : 9. Kiểm tra giấy tờ & Duyệt
+AdminApp --> DB : 10. Cập nhật trạng thái (Chờ cọc)
+
+KH --> App : 11. Chuyển khoản & Tải bill cọc
+App --> DB : 12. Lưu ảnh minh chứng cọc
+CX --> AdminApp : 13. Xác nhận Đã cọc
+CX --> AdminApp : 14. Chọn & Phân bổ tài xế
+AdminApp --> DB : 15. Lưu lệnh gán tài xế
+
+DB --> TXApp : 16. Bắn thông báo nhận chuyến
+TX --> TXApp : 17. Xác nhận nhận lịch trình
+@enduml

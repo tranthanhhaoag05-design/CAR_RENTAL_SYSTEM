@@ -1,0 +1,113 @@
+@startuml
+' Đã chuẩn hóa sang cú pháp ERD của PlantUML
+hide circle
+skinparam linetype ortho
+skinparam class {
+    BackgroundColor White
+    BorderColor Black
+    ArrowColor Black
+}
+
+entity "users" as users {
+  * id : integer <<PK>>
+  --
+  username : varchar <<unique>>
+  phone_number : varchar <<unique>>
+  password_hash : varchar
+  full_name : varchar 
+  role : varchar
+  is_active : boolean
+  created_at : timestamp
+}
+
+entity "vehicles" as vehicles {
+  * id : integer <<PK>>
+  --
+  plate_number : varchar <<unique>>
+  name : varchar
+  brand : varchar
+  type : varchar
+  transmission : varchar
+  price_per_day : integer
+  status : varchar
+  image_url : varchar
+}
+
+entity "bookings" as bookings {
+  * id : integer <<PK>>
+  --
+  customer_id : integer <<FK>>
+  vehicle_id : integer <<FK>>
+  driver_id : integer <<FK, null>>
+  start_date : timestamp
+  end_date : timestamp
+  service_type : varchar
+  total_price : integer
+  deposit_amount : integer
+  payment_status : varchar
+  status : varchar
+  created_at : timestamp
+}
+
+entity "booking_documents" as docs {
+  * id : integer <<PK>>
+  --
+  booking_id : integer <<FK>>
+  doc_type : varchar
+  image_url : varchar
+  verification_status : varchar
+}
+
+entity "payments" as payments {
+  * id : integer <<PK>>
+  --
+  booking_id : integer <<FK>>
+  amount : integer
+  payment_method : varchar
+  proof_image_url : varchar
+  verified_by : integer <<FK, null>>
+  created_at : timestamp
+}
+
+entity "driver_schedules" as schedules {
+  * id : integer <<PK>>
+  --
+  driver_id : integer <<FK>>
+  booking_id : integer <<FK>>
+  start_time : timestamp
+  end_time : timestamp
+  status : varchar
+}
+
+entity "reviews" as reviews {
+  * id : integer <<PK>>
+  --
+  booking_id : integer <<FK>>
+  customer_id : integer <<FK>>
+  rating : integer
+  comment : text
+  created_at : timestamp
+}
+
+entity "booking_status_histories" as histories {
+  * id : integer <<PK>>
+  --
+  booking_id : integer <<FK>>
+  status : varchar
+  note : varchar
+  updated_by : integer <<FK>>
+  created_at : timestamp
+}
+
+users ||--o{ bookings
+vehicles ||--o{ bookings
+bookings ||--o{ docs
+bookings ||--o{ payments
+users ||--o{ payments
+users ||--o{ schedules
+bookings ||--o{ schedules
+bookings ||--o{ reviews
+users ||--o{ reviews
+bookings ||--o{ histories
+users ||--o{ histories
+@enduml
