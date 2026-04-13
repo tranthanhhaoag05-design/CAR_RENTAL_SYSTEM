@@ -11,6 +11,8 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    protected $table = 'users';
+
     // Cập nhật lại cho đúng ERD của nhóm
     protected $fillable = [
         'full_name',

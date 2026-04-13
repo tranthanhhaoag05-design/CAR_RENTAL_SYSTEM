@@ -19,4 +19,18 @@ class VehicleController extends Controller
             'data' => $vehicles
         ], 200);
     }
+
+        public function show($id)
+    {
+        $vehicle = Vehicle::find($id);
+
+        if (!$vehicle) {
+            return response()->json(['message' => 'Không tìm thấy xe'], 404);
+        }
+
+        return response()->json([
+            'status' => 'success', 
+            'data' => $vehicle
+        ]);
+    }
 }

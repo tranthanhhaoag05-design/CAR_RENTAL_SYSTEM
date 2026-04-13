@@ -9,18 +9,26 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            
+            // 1. CỘT BẠN CẦN THÊM NẰM Ở ĐÂY
+            $table->string('username')->nullable(); 
+            
+            // 2. CÁC CỘT CHUẨN HÓA THEO THIẾT KẾ CỦA NHÓM (Sửa email/name thành thông tin nhóm)
+            $table->string('full_name');
+            $table->string('phone_number')->unique();
+            $table->string('password_hash');
+            $table->string('role')->default('customer');
+            $table->boolean('is_active')->default(true);
+            
             $table->rememberToken();
             $table->timestamps();
         });
 
+        // 2 bảng mặc định dưới này thì giữ nguyên không đổi
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
@@ -36,7 +44,6 @@ return new class extends Migration
             $table->integer('last_activity')->index();
         });
     }
-
     /**
      * Reverse the migrations.
      */

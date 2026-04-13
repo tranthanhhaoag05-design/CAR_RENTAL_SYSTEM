@@ -40,7 +40,7 @@ class BookingSeeder extends Seeder
             // Đơn 3: Đã xác nhận, đang trong thời gian thuê
             [
                 'customer_id' => 4,
-                'vehicle_id' => 3,
+                'vehicle_id' => 2,
                 'driver_id' => null,
                 'start_date' => Carbon::now()->subDays(1),
                 'end_date' => Carbon::now()->addDays(2),
