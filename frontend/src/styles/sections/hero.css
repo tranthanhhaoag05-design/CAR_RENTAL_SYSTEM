@@ -31,7 +31,6 @@
   line-height: 1.05;
   margin-bottom: 16px;
   font-weight: 800;
-  text-transform: lowercase;
 }
 
 .hero-text p {
@@ -55,4 +54,367 @@
 
 .dot.active {
   background: var(--primary);
+}
+
+/* SEARCH BAR */
+.search-bar {
+  width: 100%;
+  background: #fff;
+  border-radius: 28px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1.2fr;
+  align-items: stretch;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(9, 20, 36, 0.18);
+}
+
+.search-item {
+  min-height: 120px;
+  padding: 26px 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border: none;
+  border-right: 1px solid #e8ecef;
+}
+
+.search-item:last-of-type {
+  border-right: none;
+}
+
+.search-item span {
+  font-size: 16px;
+  color: #8a9892;
+  margin-bottom: 10px;
+}
+
+.search-item strong {
+  font-size: 22px;
+  color: #1f2c2a;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.search-clickable {
+  background: transparent;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+}
+
+.search-button {
+  border: none;
+  background: #59c5a7;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 800;
+  cursor: pointer;
+  min-height: 120px;
+  transition: 0.25s;
+}
+
+.search-button:hover {
+  opacity: 0.95;
+}
+
+/* SEARCH MODAL */
+.search-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 18, 30, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 24px;
+}
+
+.search-modal {
+  width: 100%;
+  max-width: 680px;
+  background: #fff;
+  border-radius: 24px;
+  padding: 28px 28px 24px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+.search-modal-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid #dfe7ef;
+  background: #fff;
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.search-modal-title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 24px;
+  color: #1f2f49;
+}
+
+.search-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.search-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.search-modal-field.full {
+  width: 100%;
+}
+
+.search-modal-field label {
+  font-size: 15px;
+  font-weight: 700;
+  color: #718096;
+}
+
+.search-modal-field input,
+.search-modal-field select {
+  width: 100%;
+  height: 64px;
+  border: 2px solid #e6ecf2;
+  border-radius: 16px;
+  padding: 0 16px;
+  font-size: 18px;
+  outline: none;
+  background: #fff;
+}
+
+.search-modal-field input:focus,
+.search-modal-field select:focus {
+  border-color: #57c7a8;
+}
+
+.search-modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.search-modal-duration {
+  text-align: center;
+  padding: 10px 0 0;
+}
+
+.search-modal-duration span {
+  display: block;
+  font-size: 16px;
+  color: #7b8794;
+  margin-bottom: 8px;
+}
+
+.search-modal-duration strong {
+  font-size: 34px;
+  color: #1f2f49;
+}
+
+.search-modal-warning {
+  background: #fff8df;
+  color: #5e5542;
+  border-radius: 16px;
+  padding: 16px 18px;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.search-modal-footer-text {
+  text-align: center;
+  color: #5a6779;
+  font-size: 17px;
+  line-height: 1.7;
+  padding-top: 6px;
+}
+
+.search-modal-submit {
+  height: 58px;
+  border: none;
+  border-radius: 16px;
+  background: #57c7a8;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.search-modal-submit:hover {
+  opacity: 0.95;
+}
+
+@media (max-width: 1100px) {
+  .search-bar {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .search-button {
+    grid-column: span 3;
+    min-height: 88px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-content {
+    padding-top: 90px;
+    padding-bottom: 90px;
+  }
+
+  .hero-text h1 {
+    font-size: 42px;
+  }
+
+  .hero-text p {
+    font-size: 20px;
+  }
+
+  .search-bar {
+    grid-template-columns: 1fr;
+    border-radius: 20px;
+  }
+
+  .search-item {
+    min-height: auto;
+    padding: 22px 20px;
+    border-right: none;
+    border-bottom: 1px solid #e8ecef;
+  }
+
+  .search-button {
+    grid-column: auto;
+    min-height: 72px;
+  }
+
+  .search-modal {
+    padding: 22px 18px 18px;
+    border-radius: 18px;
+  }
+
+  .search-modal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .search-modal-duration strong {
+    font-size: 28px;
+  }
+}
+.search-modal-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, #6b7280 50%),
+    linear-gradient(135deg, #6b7280 50%, transparent 50%);
+  background-position: calc(100% - 22px) calc(50% - 3px),
+    calc(100% - 14px) calc(50% - 3px);
+  background-size: 8px 8px, 8px 8px;
+  background-repeat: no-repeat;
+  padding-right: 42px;
+}
+
+.login-required-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 18, 30, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.login-required-modal {
+  width: 100%;
+  max-width: 430px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 30px 26px 24px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+  text-align: center;
+  animation: modalFadeIn 0.22s ease;
+}
+
+.login-required-icon {
+  width: 68px;
+  height: 68px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e8f1ff, #d7f5ec);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+}
+
+.login-required-modal h3 {
+  font-size: 28px;
+  color: #1f2f49;
+  margin-bottom: 10px;
+  font-weight: 800;
+}
+
+.login-required-modal p {
+  font-size: 17px;
+  line-height: 1.7;
+  color: #5f6f86;
+  margin-bottom: 24px;
+}
+
+.login-required-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.login-required-cancel,
+.login-required-confirm {
+  flex: 1;
+  height: 50px;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.login-required-cancel {
+  background: #f3f6fb;
+  border: 1px solid #dbe5f0;
+  color: #4f6078;
+}
+
+.login-required-cancel:hover {
+  background: #eaf0f7;
+}
+
+.login-required-confirm {
+  background: #3b82f6;
+  border: none;
+  color: #fff;
+}
+
+.login-required-confirm:hover {
+  background: #2563eb;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }

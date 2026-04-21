@@ -728,3 +728,22 @@ export const extraBrandCars = [
     tag: "Cao cấp",
   },
 ];
+
+export const users = [
+  {
+    id: 1,
+    name: "Admin GoDriver",
+    phone: "0375248772",
+    password: "123456",
+    role: "admin",
+    email: "admin@godriver.com",
+  },
+  {
+    id: 2,
+    name: "User Demo",
+    phone: "0912345678",
+    password: "123456",
+    role: "user",
+    email: "user@godriver.com",
+  },
+];

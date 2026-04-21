@@ -23,7 +23,7 @@
 .car-slider,
 .brand-slider {
   display: flex;
-  gap: 20px;
+  gap: 24px;
   overflow-x: auto;
   scroll-behavior: smooth;
   scrollbar-width: none;
@@ -52,6 +52,7 @@
   cursor: grabbing;
 }
 
+/* BUTTON */
 .arrow-btn {
   position: absolute;
   top: 45%;
@@ -88,6 +89,7 @@
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 8px 20px rgba(23, 78, 64, 0.05);
+  cursor: pointer;
 }
 
 .car-image-wrap {
@@ -180,6 +182,7 @@
   color: var(--white);
 }
 
+/* DRAG STATE (đã fix, KHÔNG chặn click nữa) */
 .car-slider.dragging,
 .brand-slider.dragging {
   cursor: grabbing;
@@ -187,27 +190,10 @@
   scroll-behavior: auto;
 }
 
-.car-slider.dragging .car-card,
-.car-slider.dragging .more-car-card,
-.brand-slider.dragging .brand-card {
-  pointer-events: none;
-}
-
-.car-slider::-webkit-scrollbar,
-.brand-slider::-webkit-scrollbar {
-  height: 6px;
-}
-
-.car-slider::-webkit-scrollbar-thumb,
-.brand-slider::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.25);
-  border-radius: 999px;
-}
-
-.car-slider {
-  will-change: scroll-position;
-}
-
-.car-slider.dragging * {
-  pointer-events: none;
+/* LINK FIX */
+.car-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  flex: 0 0 auto;
 }

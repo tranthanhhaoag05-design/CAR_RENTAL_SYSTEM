@@ -1,0 +1,400 @@
+.detail-topbar {
+  background: linear-gradient(90deg, #0d1728, #081120);
+  color: #fff;
+  padding: 18px 0;
+}
+
+.detail-topbar-inner {
+  display: flex;
+  align-items: center;
+}
+
+.detail-back-btn {
+  background: transparent;
+  color: #fff;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.car-detail-page {
+  padding: 32px 0 0;
+}
+
+.detail-gallery {
+  display: grid;
+  grid-template-columns: 2.2fr 1fr;
+  gap: 16px;
+  margin-bottom: 34px;
+}
+
+.detail-main-image {
+  height: 430px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.detail-main-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.detail-thumb-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.detail-thumb {
+  height: 208px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 0;
+  background: #fff;
+}
+
+.detail-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.detail-content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) 380px;
+  gap: 36px;
+  align-items: start;
+}
+
+.detail-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.detail-title {
+  font-size: 34px;
+  line-height: 1.2;
+  color: #22314d;
+  margin-bottom: 10px;
+  font-weight: 800;
+}
+
+.detail-location {
+  color: #65758b;
+  font-size: 18px;
+}
+
+.detail-share-btn {
+  background: transparent;
+  border: 1px solid #d9e3ef;
+  color: #3b82f6;
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-weight: 700;
+}
+
+.detail-divider {
+  height: 1px;
+  background: #dfe7f0;
+  margin: 22px 0 26px;
+}
+
+.detail-section {
+  margin-bottom: 34px;
+}
+
+.detail-section h2 {
+  font-size: 22px;
+  color: #22314d;
+  margin-bottom: 18px;
+  font-weight: 800;
+  position: relative;
+}
+
+.detail-section h2::after {
+  content: "";
+  display: block;
+  width: 52px;
+  height: 4px;
+  border-radius: 999px;
+  background: #35c7a3;
+  margin-top: 8px;
+}
+
+.detail-features {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.detail-feature-item {
+  background: #fff;
+  border: 1px solid #e4edf6;
+  border-radius: 18px;
+  padding: 18px 16px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
+.feature-label {
+  display: block;
+  color: #7a8aa0;
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+
+.detail-feature-item strong {
+  color: #1f2f49;
+  font-size: 22px;
+}
+
+.detail-description,
+.detail-address {
+  font-size: 18px;
+  line-height: 1.8;
+  color: #344256;
+}
+
+.detail-sidebar {
+  position: sticky;
+  top: 100px;
+}
+
+.pickup-card,
+.booking-card {
+  background: #fff;
+  border-radius: 22px;
+  border: 1px solid #dde8f2;
+  padding: 22px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+}
+
+.pickup-card {
+  margin-bottom: 18px;
+  background: #f2fffb;
+  border-color: #9ee6cf;
+}
+
+.pickup-card h3 {
+  font-size: 28px;
+  color: #22314d;
+  margin-bottom: 16px;
+}
+
+.pickup-card ul {
+  padding-left: 18px;
+  color: #3d4a5d;
+  line-height: 1.9;
+  font-size: 17px;
+}
+
+.booking-price-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.booking-main-price {
+  font-size: 36px;
+  font-weight: 800;
+  color: #34b89b;
+}
+
+.booking-sub-price {
+  font-size: 22px;
+  color: #6f7f95;
+  font-weight: 700;
+}
+
+.booking-note {
+  color: #7a8799;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.booking-time-box,
+.booking-location-box {
+  border: 1px solid #e2eaf3;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 14px;
+  background: #fafcff;
+}
+
+.booking-time-box label,
+.booking-location-box label {
+  display: block;
+  font-size: 14px;
+  color: #7a8799;
+  margin-bottom: 8px;
+}
+
+.booking-time-value,
+.booking-location-value {
+  font-size: 16px;
+  color: #24324c;
+  line-height: 1.7;
+  font-weight: 600;
+}
+
+.booking-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+  margin-top: 8px;
+  transition: 0.25s;
+}
+
+.booking-btn:hover {
+  background: #2563eb;
+}
+
+.car-card-link,
+.rent-car-card-link {
+  display: block;
+  color: inherit;
+}
+
+@media (max-width: 1100px) {
+  .detail-content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-sidebar {
+    position: static;
+  }
+
+  .detail-features {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .detail-gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-main-image {
+    height: 320px;
+  }
+
+  .detail-thumb {
+    height: 140px;
+  }
+
+  .detail-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .detail-title {
+    font-size: 28px;
+  }
+
+  .detail-features {
+    grid-template-columns: 1fr;
+  }
+}
+.login-required-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 18, 30, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.login-required-modal {
+  width: 100%;
+  max-width: 430px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 30px 26px 24px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+  text-align: center;
+  animation: modalFadeIn 0.22s ease;
+}
+
+.login-required-icon {
+  width: 68px;
+  height: 68px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e8f1ff, #d7f5ec);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+}
+
+.login-required-modal h3 {
+  font-size: 28px;
+  color: #1f2f49;
+  margin-bottom: 10px;
+  font-weight: 800;
+}
+
+.login-required-modal p {
+  font-size: 17px;
+  line-height: 1.7;
+  color: #5f6f86;
+  margin-bottom: 24px;
+}
+
+.login-required-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.login-required-cancel,
+.login-required-confirm {
+  flex: 1;
+  height: 50px;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.login-required-cancel {
+  background: #f3f6fb;
+  border: 1px solid #dbe5f0;
+  color: #4f6078;
+}
+
+.login-required-cancel:hover {
+  background: #eaf0f7;
+}
+
+.login-required-confirm {
+  background: #3b82f6;
+  border: none;
+  color: #fff;
+}
+
+.login-required-confirm:hover {
+  background: #2563eb;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

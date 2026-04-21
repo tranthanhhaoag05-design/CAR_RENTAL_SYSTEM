@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { fakeUsers } from '../data/fakeDB';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -11,17 +12,28 @@ export default function LoginPage() {
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
 
+  useEffect(() => {
+    const storedUsers = localStorage.getItem('users');
+    if (!storedUsers) {
+      localStorage.setItem('users', JSON.stringify(fakeUsers));
+    }
+  }, []);
+
   const normalizePhone = (value) => value.replace(/\s+/g, '');
 
   const isValidVietnamPhone = (value) => {
-    const phone = normalizePhone(value);
-    return /^(0[3|5|7|8|9][0-9]{8})$/.test(phone);
+    const normalized = normalizePhone(value);
+    return /^(0[3|5|7|8|9][0-9]{8})$/.test(normalized);
+  };
+
+  const resetMessage = () => {
+    setMessage('');
+    setMessageType('');
   };
 
   const handleLogin = (e) => {
     e.preventDefault();
-    setMessage('');
-    setMessageType('');
+    resetMessage();
 
     if (!isValidVietnamPhone(phone)) {
       setMessage('Số điện thoại Việt Nam không hợp lệ');
@@ -36,9 +48,10 @@ export default function LoginPage() {
     }
 
     const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const phoneNormalized = normalizePhone(phone);
+
     const foundUser = users.find(
-      (user) =>
-        user.phone === normalizePhone(phone) && user.password === password
+      (user) => user.phone === phoneNormalized && user.password === password
     );
 
     if (!foundUser) {
@@ -59,8 +72,7 @@ export default function LoginPage() {
 
   const handleRegister = (e) => {
     e.preventDefault();
-    setMessage('');
-    setMessageType('');
+    resetMessage();
 
     if (!isValidVietnamPhone(phone)) {
       setMessage('Số điện thoại Việt Nam không hợp lệ');
@@ -86,23 +98,27 @@ export default function LoginPage() {
     }
 
     const newUser = {
+      id: Date.now(),
+      name: `User ${phoneNormalized.slice(-4)}`,
       phone: phoneNormalized,
       password,
+      role: 'user',
     };
 
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
+    const updatedUsers = [...users, newUser];
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+
     setMessage('Đăng ký thành công, bạn có thể đăng nhập');
     setMessageType('success');
 
     setMode('login');
     setPassword('');
+    setNewPassword('');
   };
 
   const handleForgotPassword = (e) => {
     e.preventDefault();
-    setMessage('');
-    setMessageType('');
+    resetMessage();
 
     if (!isValidVietnamPhone(phone)) {
       setMessage('Số điện thoại Việt Nam không hợp lệ');
@@ -129,6 +145,7 @@ export default function LoginPage() {
 
     users[userIndex].password = newPassword;
     localStorage.setItem('users', JSON.stringify(users));
+
     setMessage('Đổi mật khẩu thành công, hãy đăng nhập lại');
     setMessageType('success');
 
@@ -211,8 +228,7 @@ export default function LoginPage() {
                 className="auth-link-btn"
                 onClick={() => {
                   setMode('register');
-                  setMessage('');
-                  setMessageType('');
+                  resetMessage();
                   setPassword('');
                 }}
               >
@@ -226,8 +242,7 @@ export default function LoginPage() {
                 className="auth-link-btn"
                 onClick={() => {
                   setMode('forgot');
-                  setMessage('');
-                  setMessageType('');
+                  resetMessage();
                   setPassword('');
                 }}
               >
@@ -273,8 +288,7 @@ export default function LoginPage() {
                 className="phone-cancel-btn"
                 onClick={() => {
                   setMode('login');
-                  setMessage('');
-                  setMessageType('');
+                  resetMessage();
                   setPassword('');
                 }}
               >
@@ -323,8 +337,7 @@ export default function LoginPage() {
                 className="phone-cancel-btn"
                 onClick={() => {
                   setMode('login');
-                  setMessage('');
-                  setMessageType('');
+                  resetMessage();
                   setNewPassword('');
                 }}
               >
