@@ -1,0 +1,58 @@
+/* HERO */
+.hero {
+  min-height: 720px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  background-color: var(--navy-bg);
+}
+
+.hero-overlay {
+  min-height: 720px;
+  background: linear-gradient(
+    rgba(8, 17, 32, 0.74),
+    rgba(8, 17, 32, 0.56)
+  );
+}
+
+.hero-content {
+  padding-top: 110px;
+  padding-bottom: 140px;
+}
+
+.hero-text {
+  max-width: 620px;
+  color: var(--white);
+  margin-bottom: 40px;
+}
+
+.hero-text h1 {
+  font-size: 64px;
+  line-height: 1.05;
+  margin-bottom: 16px;
+  font-weight: 800;
+  text-transform: lowercase;
+}
+
+.hero-text p {
+  font-size: 24px;
+  line-height: 1.5;
+  color: var(--text-light);
+}
+
+.hero-dots {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.dot.active {
+  background: var(--primary);
+}

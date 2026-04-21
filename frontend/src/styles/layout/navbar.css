@@ -1,0 +1,106 @@
+/* NAVBAR */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+  background: rgba(8, 17, 32, 0.96);
+  border-bottom: 1px solid rgba(96, 165, 250, 0.12);
+  backdrop-filter: blur(8px);
+}
+
+.nav-inner {
+  height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--primary-light);
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.logo-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--white);
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 28px;
+  color: #dbeafe;
+  font-weight: 600;
+}
+
+.nav-links a {
+  transition: 0.25s ease;
+}
+
+.nav-links a:hover {
+  color: var(--primary-light);
+}
+
+.login-btn {
+  background: transparent;
+  border: 1px solid rgba(96, 165, 250, 0.45);
+  color: var(--white);
+  padding: 12px 24px;
+  border-radius: 14px;
+  font-weight: 700;
+  transition: 0.25s ease;
+}
+
+.login-btn:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.nav-auth {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Ô trắng chứa số điện thoại */
+.user-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  padding: 8px 14px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Số điện thoại */
+.user-phone {
+  color: #1f2937;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* Nút đăng xuất */
+.logout-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.logout-btn:hover {
+  background: #dc2626;
+}

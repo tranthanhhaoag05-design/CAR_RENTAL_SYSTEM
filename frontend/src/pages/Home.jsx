@@ -1,3 +1,4 @@
+import Navbar from "../components/Navbar";
 import HeroBanner from "../components/HeroBanner";
 import CarSection from "../components/CarSection";
 import BrandSection from "../components/BrandSection";
@@ -15,6 +16,7 @@ import {
 export default function Home() {
   return (
     <>
+      <Navbar />
       <HeroBanner banners={banners} />
 
       <CarSection
@@ -36,7 +38,6 @@ export default function Home() {
       />
 
       <BrandSection brands={brands} />
-
       <FeaturedLocations />
       <CustomerReviews />
       <SiteFooter />

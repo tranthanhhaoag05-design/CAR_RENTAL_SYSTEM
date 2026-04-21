@@ -1,0 +1,194 @@
+.login-page {
+  min-height: 100vh;
+  background: #f3f7fd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.login-box.phone-login-box {
+  width: 100%;
+  max-width: 560px;
+  background: #ffffff;
+  padding: 34px 30px 28px;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.phone-login-icon-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.phone-login-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #e8f8f3;
+  color: #55c6a9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.login-header.phone-login-header {
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.phone-login-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f1f1f;
+  margin-bottom: 10px;
+}
+
+.phone-login-header p {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.login-form.phone-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.phone-login-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.phone-login-form .form-group label {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.phone-login-form .form-group input {
+  display: block;
+  width: 100%;
+  height: 58px;
+  border: 1px solid #dcdfe4;
+  border-radius: 12px;
+  padding: 0 18px;
+  font-size: 15px;
+  color: #111827;
+  background: #fff;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.phone-login-form .form-group input::placeholder {
+  color: #9ca3af;
+}
+
+.phone-login-form .form-group input:focus {
+  border-color: #55c6a9;
+  box-shadow: 0 0 0 3px rgba(85, 198, 169, 0.12);
+  outline: none;
+}
+
+.phone-login-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.phone-cancel-btn {
+  min-width: 96px;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #d9dde3;
+  color: #222;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.phone-submit-btn {
+  min-width: 120px;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 10px;
+  background: #55c6a9;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+}
+
+.phone-submit-btn:hover {
+  background: #47b89b;
+}
+
+@media (max-width: 640px) {
+  .login-page {
+    padding: 16px;
+  }
+
+  .login-box.phone-login-box {
+    padding: 24px 18px 20px;
+    border-radius: 16px;
+  }
+
+  .phone-login-actions {
+    flex-direction: column;
+  }
+
+  .phone-cancel-btn,
+  .phone-submit-btn {
+    width: 100%;
+  }
+}
+.auth-extra-links {
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.auth-link-btn {
+  background: transparent;
+  border: none;
+  color: #55c6a9;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.auth-link-btn:hover {
+  text-decoration: underline;
+}
+
+.auth-divider {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.auth-message {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.auth-message.error {
+  color: #ef4444;
+}
+
+.auth-message.success {
+  color: #16a34a;
+}
