@@ -1,10 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  carsNow,
-  suggestCars,
-  luxuryCars,
-  extraBrandCars,
-} from "../data/mockData";
+import { getVehicles } from "../services/vehicleService";
+import { mapVehicleFromApi } from "../utils/mapVehicleFromApi";
 
 export default function SearchModal({
   isOpen,
@@ -13,15 +9,25 @@ export default function SearchModal({
   onApply,
 }) {
   const [form, setForm] = useState(searchData);
+  const [cars, setCars] = useState([]);
 
-  const allCars = useMemo(
-    () => [...carsNow, ...suggestCars, ...luxuryCars, ...extraBrandCars],
-    []
-  );
+  useEffect(() => {
+    const fetchCars = async () => {
+      try {
+        const data = await getVehicles();
+        setCars(data.map(mapVehicleFromApi));
+      } catch (error) {
+        console.error("Lỗi lấy xe trong SearchModal:", error);
+        setCars([]);
+      }
+    };
+
+    fetchCars();
+  }, []);
 
   const areaOptions = useMemo(() => {
-    return [...new Set(allCars.map((car) => car.location).filter(Boolean))];
-  }, [allCars]);
+    return [...new Set(cars.map((car) => car.location).filter(Boolean))];
+  }, [cars]);
 
   useEffect(() => {
     setForm(searchData);
@@ -80,10 +86,7 @@ export default function SearchModal({
 
   return (
     <div className="search-modal-overlay" onClick={onClose}>
-      <div
-        className="search-modal"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="search-modal" onClick={(e) => e.stopPropagation()}>
         <button className="search-modal-close" onClick={onClose}>
           ×
         </button>

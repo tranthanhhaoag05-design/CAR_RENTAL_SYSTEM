@@ -1,31 +1,35 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import SiteFooter from "../components/SiteFooter";
-import {
-  banners,
-  brands,
-  carsNow,
-  suggestCars,
-  luxuryCars,
-  extraBrandCars,
-} from "../data/mockData";
+import { banners, brands } from "../data/uiData";
+import { getVehicles } from "../services/vehicleService";
+import { mapVehicleFromApi } from "../utils/mapVehicleFromApi";
 import "../styles/pages/rent-cars-page.css";
 
 export default function RentCarsPage() {
   const { state } = useLocation();
   const selectedArea = state?.selectedArea || "";
   const [activeFilter, setActiveFilter] = useState("all");
+  const [cars, setCars] = useState([]);
 
-  const allCars = useMemo(
-    () => [...carsNow, ...suggestCars, ...luxuryCars, ...extraBrandCars],
-    []
-  );
+  useEffect(() => {
+    const fetchCars = async () => {
+      try {
+        const data = await getVehicles();
+        setCars(data.map(mapVehicleFromApi));
+      } catch (error) {
+        console.error("Lỗi lấy xe ở RentCarsPage:", error);
+        setCars([]);
+      }
+    };
+
+    fetchCars();
+  }, []);
 
   const filteredCars = useMemo(() => {
-    let result = allCars;
+    let result = cars;
 
-    // Lọc theo khu vực được chọn từ modal tìm xe
     if (selectedArea) {
       const normalizedArea = selectedArea.toLowerCase().trim();
       result = result.filter((car) =>
@@ -33,7 +37,6 @@ export default function RentCarsPage() {
       );
     }
 
-    // Lọc theo thanh ngang
     if (activeFilter === "sale") {
       result = result.filter((car) => {
         const tag = (car.tag || "").toLowerCase();
@@ -58,7 +61,7 @@ export default function RentCarsPage() {
     }
 
     return result;
-  }, [allCars, selectedArea, activeFilter]);
+  }, [cars, selectedArea, activeFilter]);
 
   const groupedCars = brands
     .map((brand) => ({
@@ -66,6 +69,10 @@ export default function RentCarsPage() {
       cars: filteredCars.filter((car) => car.brand === brand.name),
     }))
     .filter((brand) => brand.cars.length > 0);
+
+  const otherBrandCars = filteredCars.filter(
+    (car) => !brands.some((brand) => brand.name === car.brand)
+  );
 
   const banner = banners[0];
 
@@ -181,7 +188,55 @@ export default function RentCarsPage() {
                 </div>
               </div>
             ))
-          ) : (
+          ) : null}
+
+          {otherBrandCars.length > 0 && (
+            <div className="brand-block">
+              <div className="brand-block-header">
+                <h2>Khác</h2>
+                <span>{otherBrandCars.length} xe</span>
+              </div>
+
+              <div className="rent-car-grid">
+                {otherBrandCars.map((car) => (
+                  <Link
+                    to={`/xe/${car.id}`}
+                    className="rent-car-card-link"
+                    key={car.id}
+                  >
+                    <div className="rent-car-card">
+                      <div className="rent-car-image-wrap">
+                        <img
+                          src={car.image}
+                          alt={car.name}
+                          className="rent-car-image"
+                        />
+                        <span className="rent-car-tag">{car.tag}</span>
+                      </div>
+
+                      <div className="rent-car-body">
+                        <h3>{car.name}</h3>
+                        <p className="rent-car-location">{car.location}</p>
+
+                        <div className="rent-car-price">
+                          <span className="rent-price-hour">{car.priceHour}</span>
+                          <span className="rent-price-day">{car.priceDay}</span>
+                        </div>
+
+                        <div className="rent-car-info">
+                          <span>{car.seats} chỗ</span>
+                          <span>{car.transmission}</span>
+                          <span>{car.fuel}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {filteredCars.length === 0 && (
             <div className="rent-empty-state">
               Không tìm thấy xe nào trong khu vực này.
             </div>

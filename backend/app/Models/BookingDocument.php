@@ -10,13 +10,12 @@ class BookingDocument extends Model
     use HasFactory;
 
     protected $fillable = [
-        'booking_id', 
-        'doc_type', 
-        'image_url', 
-        'verification_status'
+        'booking_id',
+        'document_type',
+        'file_url',
+        'status',
     ];
 
-    // Mối quan hệ: Giấy tờ này thuộc về 1 đơn đặt xe
     public function booking()
     {
         return $this->belongsTo(Booking::class);

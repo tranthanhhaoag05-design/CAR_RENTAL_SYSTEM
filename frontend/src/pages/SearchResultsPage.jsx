@@ -4,12 +4,8 @@ import Navbar from "../components/Navbar";
 import SiteFooter from "../components/SiteFooter";
 import SearchModal from "../components/SearchModal";
 import CarCard from "../components/CarCard";
-import {
-  carsNow,
-  suggestCars,
-  luxuryCars,
-  extraBrandCars,
-} from "../data/mockData";
+import { getVehicles } from "../services/vehicleService";
+import { mapVehicleFromApi } from "../utils/mapVehicleFromApi";
 
 export default function SearchResultsPage() {
   const { state } = useLocation();
@@ -22,31 +18,41 @@ export default function SearchResultsPage() {
     returnTime: "",
   };
 
+  const [cars, setCars] = useState([]);
   const [searchData, setSearchData] = useState(state || defaultSearchData);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
- const [filters, setFilters] = useState({
-  saleOnly: false,
-  seats: "",
-  brand: state?.selectedBrand || "",
-  fuel: "",
-  area: "",
-});
+  const [filters, setFilters] = useState({
+    saleOnly: false,
+    seats: "",
+    brand: state?.selectedBrand || "",
+    fuel: "",
+    area: "",
+  });
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const allCars = useMemo(
-    () => [...carsNow, ...suggestCars, ...luxuryCars, ...extraBrandCars],
-    []
-  );
+  useEffect(() => {
+    const fetchCars = async () => {
+      try {
+        const data = await getVehicles();
+        setCars(data.map(mapVehicleFromApi));
+      } catch (error) {
+        console.error("Lỗi lấy xe ở SearchResultsPage:", error);
+        setCars([]);
+      }
+    };
 
-  const brandOptions = [...new Set(allCars.map((car) => car.brand).filter(Boolean))];
-  const fuelOptions = [...new Set(allCars.map((car) => car.fuel).filter(Boolean))];
-  const areaOptions = [...new Set(allCars.map((car) => car.location).filter(Boolean))];
+    fetchCars();
+  }, []);
 
-  const filteredCars = allCars.filter((car) => {
+  const brandOptions = [...new Set(cars.map((car) => car.brand).filter(Boolean))];
+  const fuelOptions = [...new Set(cars.map((car) => car.fuel).filter(Boolean))];
+  const areaOptions = [...new Set(cars.map((car) => car.location).filter(Boolean))];
+
+  const filteredCars = cars.filter((car) => {
     const normalizedSearchLocation = (searchData.location || "").toLowerCase().trim();
     const normalizedCarLocation = (car.location || "").toLowerCase().trim();
 
@@ -60,7 +66,8 @@ export default function SearchResultsPage() {
       !filters.saleOnly ||
       (car.tag || "").toLowerCase().includes("sale") ||
       (car.tag || "").toLowerCase().includes("giảm") ||
-      (car.tag || "").toLowerCase().includes("ưu đãi");
+      (car.tag || "").toLowerCase().includes("ưu đãi") ||
+      (car.tag || "").toLowerCase().includes("flash");
 
     const matchSeats =
       !filters.seats || String(car.seats) === String(filters.seats);

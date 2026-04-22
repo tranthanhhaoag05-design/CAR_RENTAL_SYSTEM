@@ -1,17 +1,40 @@
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import SiteFooter from "../components/SiteFooter";
-import { getOrdersByUser } from "../data/orderDB";
+import { getMyBookingsApi } from "../services/bookingService";
 
 export default function BookingHistoryPage() {
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+  const token = localStorage.getItem("access_token");
 
   useEffect(() => {
-    if (currentUser) {
-      setOrders(getOrdersByUser(currentUser.id).reverse());
-    }
-  }, [currentUser]);
+    const fetchMyBookings = async () => {
+      if (!currentUser || !token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const result = await getMyBookingsApi(token);
+        const data = Array.isArray(result?.data)
+          ? result.data
+          : Array.isArray(result)
+          ? result
+          : [];
+        setOrders(data.reverse());
+      } catch (error) {
+        console.error("Lỗi lấy lịch sử đặt xe:", error);
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMyBookings();
+  }, [currentUser, token]);
 
   const getStatusText = (status) => {
     switch (status) {
@@ -23,9 +46,25 @@ export default function BookingHistoryPage() {
         return "Hoàn tất";
       case "cancelled":
         return "Đã hủy";
+      case "pending":
+        return "Đang chờ xác nhận";
+      case "confirmed":
+        return "Đã xác nhận";
       default:
-        return status;
+        return status || "Không xác định";
     }
+  };
+
+  const formatMoney = (value) => {
+    return Number(value || 0).toLocaleString("vi-VN") + "đ";
+  };
+
+  const getCarName = (order) => {
+    return (
+      order?.vehicle?.name ||
+      order?.car_name ||
+      `Xe #${order?.vehicle_id || ""}`
+    );
   };
 
   return (
@@ -37,6 +76,8 @@ export default function BookingHistoryPage() {
 
         {!currentUser ? (
           <p>Bạn cần đăng nhập để xem lịch sử đặt xe.</p>
+        ) : loading ? (
+          <p>Đang tải lịch sử đặt xe...</p>
         ) : orders.length === 0 ? (
           <p>Bạn chưa có đơn đặt xe nào.</p>
         ) : (
@@ -51,12 +92,44 @@ export default function BookingHistoryPage() {
                   boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
                 }}
               >
-                <h3>{order.carName}</h3>
-                <p>Khu vực: {order.location}</p>
-                <p>Giá: {Number(order.total).toLocaleString("vi-VN")}đ</p>
-                <p>Trạng thái: <strong>{getStatusText(order.status)}</strong></p>
-                <p>Tài xế: {order.driverName || "Chưa có tài xế nhận"}</p>
-                <p>Ngày đặt: {new Date(order.createdAt).toLocaleString("vi-VN")}</p>
+                <h3>{getCarName(order)}</h3>
+                <p>Xe ID: {order.vehicle_id}</p>
+                <p>Giá: {formatMoney(order.total_price)}</p>
+                <p>
+                  Tiền cọc: <strong>{formatMoney(order.deposit_amount)}</strong>
+                </p>
+                <p>
+                  Trạng thái đơn: <strong>{getStatusText(order.status)}</strong>
+                </p>
+                <p>
+                  Thanh toán: <strong>{order.payment_status || "unpaid"}</strong>
+                </p>
+                <p>
+                  Hình thức:{" "}
+                  <strong>
+                    {order.service_type === "with_driver"
+                      ? "Có tài xế"
+                      : "Tự lái"}
+                  </strong>
+                </p>
+                <p>
+                  Bắt đầu:{" "}
+                  {order.start_date
+                    ? new Date(order.start_date).toLocaleString("vi-VN")
+                    : "-"}
+                </p>
+                <p>
+                  Kết thúc:{" "}
+                  {order.end_date
+                    ? new Date(order.end_date).toLocaleString("vi-VN")
+                    : "-"}
+                </p>
+                <p>
+                  Ngày đặt:{" "}
+                  {order.created_at
+                    ? new Date(order.created_at).toLocaleString("vi-VN")
+                    : "-"}
+                </p>
               </div>
             ))}
           </div>

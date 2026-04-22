@@ -3,50 +3,39 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $users = [
+        DB::table('users')->updateOrInsert(
+            ['phone_number' => '0375248772'],
             [
-                'username' => 'admin_gia_bao',
-                'phone_number' => '0901111111',
-                'password_hash' => Hash::make('password123'),
-                'full_name' => 'Quản Trị Viên Bảo',
+                'username' => 'admin',
+                'full_name' => 'Admin GoDriver',
+                'phone_number' => '0375248772',
+                'password_hash' => Hash::make('123456'),
                 'role' => 'admin',
                 'is_active' => true,
-            ],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+
+        DB::table('users')->updateOrInsert(
+            ['phone_number' => '0912345678'],
             [
-                'username' => 'owner_tuan_anh',
-                'phone_number' => '0902222222',
-                'password_hash' => Hash::make('password123'),
-                'full_name' => 'Chủ Xe Tuấn Anh',
-                'role' => 'owner',
-                'is_active' => true,
-            ],
-            [
-                'username' => 'driver_van_a',
-                'phone_number' => '0903333333',
-                'password_hash' => Hash::make('password123'),
-                'full_name' => 'Tài Xế Văn A',
-                'role' => 'driver',
-                'is_active' => true,
-            ],
-            [
-                'username' => 'customer_thi_b',
-                'phone_number' => '0904444444',
-                'password_hash' => Hash::make('password123'),
-                'full_name' => 'Khách Hàng Thị B',
+                'username' => 'userdemo',
+                'full_name' => 'User Demo',
+                'phone_number' => '0912345678',
+                'password_hash' => Hash::make('123456'),
                 'role' => 'customer',
                 'is_active' => true,
-            ],
-        ];
-
-        foreach ($users as $user) {
-            User::create($user);
-        }
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
     }
 }

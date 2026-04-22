@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { logoutApi } from "../services/authService";
 
 export default function Navbar() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -34,11 +35,21 @@ export default function Navbar() {
     return `${phone.slice(0, 3)}xxxxxxx`;
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("currentUser");
-    setCurrentUser(null);
-    navigate("/");
-    window.location.reload();
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      if (token) {
+        await logoutApi(token);
+      }
+    } catch (error) {
+      // vẫn xóa local nếu API logout lỗi
+    } finally {
+      localStorage.removeItem("currentUser");
+      localStorage.removeItem("access_token");
+      setCurrentUser(null);
+      navigate("/");
+      window.location.reload();
+    }
   };
 
   const showToast = (message, type = "success") => {

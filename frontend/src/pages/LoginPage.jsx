@@ -1,25 +1,20 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { fakeUsers } from '../data/fakeDB';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { loginApi, registerApi } from "../services/authService";
 
 export default function LoginPage() {
   const navigate = useNavigate();
 
-  const [mode, setMode] = useState('login');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState('');
+  const [mode, setMode] = useState("login");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const storedUsers = localStorage.getItem('users');
-    if (!storedUsers) {
-      localStorage.setItem('users', JSON.stringify(fakeUsers));
-    }
-  }, []);
-
-  const normalizePhone = (value) => value.replace(/\s+/g, '');
+  const normalizePhone = (value) => value.replace(/\s+/g, "");
 
   const isValidVietnamPhone = (value) => {
     const normalized = normalizePhone(value);
@@ -27,131 +22,124 @@ export default function LoginPage() {
   };
 
   const resetMessage = () => {
-    setMessage('');
-    setMessageType('');
+    setMessage("");
+    setMessageType("");
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     resetMessage();
 
     if (!isValidVietnamPhone(phone)) {
-      setMessage('Số điện thoại Việt Nam không hợp lệ');
-      setMessageType('error');
+      setMessage("Số điện thoại Việt Nam không hợp lệ");
+      setMessageType("error");
       return;
     }
 
     if (!password.trim()) {
-      setMessage('Vui lòng nhập mật khẩu');
-      setMessageType('error');
+      setMessage("Vui lòng nhập mật khẩu");
+      setMessageType("error");
       return;
     }
 
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const phoneNormalized = normalizePhone(phone);
+    try {
+      setLoading(true);
 
-    const foundUser = users.find(
-      (user) => user.phone === phoneNormalized && user.password === password
-    );
+      const result = await loginApi({
+        phone_number: normalizePhone(phone),
+        password,
+      });
 
-    if (!foundUser) {
-      setMessage('Sai số điện thoại hoặc mật khẩu');
-      setMessageType('error');
-      return;
+      const user = result?.data;
+      const token = result?.access_token;
+
+      if (!user || !token) {
+        setMessage("Dữ liệu đăng nhập trả về không hợp lệ");
+        setMessageType("error");
+        return;
+      }
+
+      const currentUser = {
+        id: user.id,
+        name: user.full_name,
+        phone: user.phone_number,
+        role: user.role === "customer" ? "user" : user.role,
+        is_active: user.is_active,
+      };
+
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
+      localStorage.setItem("access_token", token);
+
+      setMessage(result?.message || "Đăng nhập thành công");
+      setMessageType("success");
+
+      setTimeout(() => {
+        navigate("/");
+        window.location.reload();
+      }, 700);
+    } catch (error) {
+      const apiMessage =
+        error?.response?.data?.message || "Sai số điện thoại hoặc mật khẩu";
+      setMessage(apiMessage);
+      setMessageType("error");
+    } finally {
+      setLoading(false);
     }
-
-    localStorage.setItem('currentUser', JSON.stringify(foundUser));
-    setMessage('Đăng nhập thành công');
-    setMessageType('success');
-
-    setTimeout(() => {
-      navigate('/');
-      window.location.reload();
-    }, 700);
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     resetMessage();
 
+    if (!fullName.trim()) {
+      setMessage("Vui lòng nhập họ tên");
+      setMessageType("error");
+      return;
+    }
+
     if (!isValidVietnamPhone(phone)) {
-      setMessage('Số điện thoại Việt Nam không hợp lệ');
-      setMessageType('error');
+      setMessage("Số điện thoại Việt Nam không hợp lệ");
+      setMessageType("error");
       return;
     }
 
-    if (!password.trim()) {
-      setMessage('Vui lòng nhập mật khẩu');
-      setMessageType('error');
+    if (!password.trim() || password.length < 6) {
+      setMessage("Mật khẩu phải có ít nhất 6 ký tự");
+      setMessageType("error");
       return;
     }
 
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const phoneNormalized = normalizePhone(phone);
+    try {
+      setLoading(true);
 
-    const existed = users.find((user) => user.phone === phoneNormalized);
+      const result = await registerApi({
+        full_name: fullName.trim(),
+        phone_number: normalizePhone(phone),
+        password,
+      });
 
-    if (existed) {
-      setMessage('Tài khoản đã tồn tại');
-      setMessageType('error');
-      return;
+      setMessage(result?.message || "Đăng ký thành công, bạn có thể đăng nhập");
+      setMessageType("success");
+
+      setMode("login");
+      setPassword("");
+      setNewPassword("");
+      setFullName("");
+    } catch (error) {
+      const apiMessage =
+        error?.response?.data?.message || "Đăng ký thất bại";
+      setMessage(apiMessage);
+      setMessageType("error");
+    } finally {
+      setLoading(false);
     }
-
-    const newUser = {
-      id: Date.now(),
-      name: `User ${phoneNormalized.slice(-4)}`,
-      phone: phoneNormalized,
-      password,
-      role: 'user',
-    };
-
-    const updatedUsers = [...users, newUser];
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-
-    setMessage('Đăng ký thành công, bạn có thể đăng nhập');
-    setMessageType('success');
-
-    setMode('login');
-    setPassword('');
-    setNewPassword('');
   };
 
   const handleForgotPassword = (e) => {
     e.preventDefault();
     resetMessage();
-
-    if (!isValidVietnamPhone(phone)) {
-      setMessage('Số điện thoại Việt Nam không hợp lệ');
-      setMessageType('error');
-      return;
-    }
-
-    if (!newPassword.trim()) {
-      setMessage('Vui lòng nhập mật khẩu mới');
-      setMessageType('error');
-      return;
-    }
-
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const phoneNormalized = normalizePhone(phone);
-
-    const userIndex = users.findIndex((user) => user.phone === phoneNormalized);
-
-    if (userIndex === -1) {
-      setMessage('Số điện thoại chưa được đăng ký');
-      setMessageType('error');
-      return;
-    }
-
-    users[userIndex].password = newPassword;
-    localStorage.setItem('users', JSON.stringify(users));
-
-    setMessage('Đổi mật khẩu thành công, hãy đăng nhập lại');
-    setMessageType('success');
-
-    setMode('login');
-    setPassword('');
-    setNewPassword('');
+    setMessage("Backend hiện chưa có API quên mật khẩu.");
+    setMessageType("error");
   };
 
   return (
@@ -163,23 +151,23 @@ export default function LoginPage() {
 
         <div className="login-header phone-login-header">
           <h1>
-            {mode === 'login'
-              ? 'Đăng nhập'
-              : mode === 'register'
-              ? 'Đăng ký'
-              : 'Quên mật khẩu'}
+            {mode === "login"
+              ? "Đăng nhập"
+              : mode === "register"
+              ? "Đăng ký"
+              : "Quên mật khẩu"}
           </h1>
           <p>
-            {mode === 'login' &&
-              'Nhập số điện thoại và mật khẩu để tiếp tục'}
-            {mode === 'register' &&
-              'Tạo tài khoản mới bằng số điện thoại Việt Nam'}
-            {mode === 'forgot' &&
-              'Nhập số điện thoại và mật khẩu mới để lấy lại tài khoản'}
+            {mode === "login" &&
+              "Nhập số điện thoại và mật khẩu để tiếp tục"}
+            {mode === "register" &&
+              "Tạo tài khoản mới bằng số điện thoại Việt Nam"}
+            {mode === "forgot" &&
+              "Tính năng quên mật khẩu sẽ dùng khi backend có API tương ứng"}
           </p>
         </div>
 
-        {mode === 'login' && (
+        {mode === "login" && (
           <form className="login-form phone-login-form" onSubmit={handleLogin}>
             <div className="form-group">
               <label htmlFor="phone">Số điện thoại</label>
@@ -204,7 +192,7 @@ export default function LoginPage() {
             </div>
 
             {message && (
-              <p className={`auth-message ${messageType === 'success' ? 'success' : 'error'}`}>
+              <p className={`auth-message ${messageType === "success" ? "success" : "error"}`}>
                 {message}
               </p>
             )}
@@ -213,12 +201,13 @@ export default function LoginPage() {
               <button
                 type="button"
                 className="phone-cancel-btn"
-                onClick={() => navigate('/')}
+                onClick={() => navigate("/")}
+                disabled={loading}
               >
                 Hủy
               </button>
-              <button type="submit" className="phone-submit-btn">
-                Tiếp tục
+              <button type="submit" className="phone-submit-btn" disabled={loading}>
+                {loading ? "Đang xử lý..." : "Tiếp tục"}
               </button>
             </div>
 
@@ -227,9 +216,9 @@ export default function LoginPage() {
                 type="button"
                 className="auth-link-btn"
                 onClick={() => {
-                  setMode('register');
+                  setMode("register");
                   resetMessage();
-                  setPassword('');
+                  setPassword("");
                 }}
               >
                 Đăng ký
@@ -241,9 +230,9 @@ export default function LoginPage() {
                 type="button"
                 className="auth-link-btn"
                 onClick={() => {
-                  setMode('forgot');
+                  setMode("forgot");
                   resetMessage();
-                  setPassword('');
+                  setPassword("");
                 }}
               >
                 Quên mật khẩu
@@ -252,8 +241,19 @@ export default function LoginPage() {
           </form>
         )}
 
-        {mode === 'register' && (
+        {mode === "register" && (
           <form className="login-form phone-login-form" onSubmit={handleRegister}>
+            <div className="form-group">
+              <label htmlFor="fullName">Họ và tên</label>
+              <input
+                id="fullName"
+                type="text"
+                placeholder="Nhập họ và tên"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
+            </div>
+
             <div className="form-group">
               <label htmlFor="register-phone">Số điện thoại</label>
               <input
@@ -270,14 +270,14 @@ export default function LoginPage() {
               <input
                 id="register-password"
                 type="password"
-                placeholder="Nhập mật khẩu"
+                placeholder="Ít nhất 6 ký tự"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
 
             {message && (
-              <p className={`auth-message ${messageType === 'success' ? 'success' : 'error'}`}>
+              <p className={`auth-message ${messageType === "success" ? "success" : "error"}`}>
                 {message}
               </p>
             )}
@@ -287,21 +287,21 @@ export default function LoginPage() {
                 type="button"
                 className="phone-cancel-btn"
                 onClick={() => {
-                  setMode('login');
+                  setMode("login");
                   resetMessage();
-                  setPassword('');
                 }}
+                disabled={loading}
               >
                 Quay lại
               </button>
-              <button type="submit" className="phone-submit-btn">
-                Đăng ký
+              <button type="submit" className="phone-submit-btn" disabled={loading}>
+                {loading ? "Đang xử lý..." : "Đăng ký"}
               </button>
             </div>
           </form>
         )}
 
-        {mode === 'forgot' && (
+        {mode === "forgot" && (
           <form className="login-form phone-login-form" onSubmit={handleForgotPassword}>
             <div className="form-group">
               <label htmlFor="forgot-phone">Số điện thoại</label>
@@ -326,7 +326,7 @@ export default function LoginPage() {
             </div>
 
             {message && (
-              <p className={`auth-message ${messageType === 'success' ? 'success' : 'error'}`}>
+              <p className={`auth-message ${messageType === "success" ? "success" : "error"}`}>
                 {message}
               </p>
             )}
@@ -336,15 +336,14 @@ export default function LoginPage() {
                 type="button"
                 className="phone-cancel-btn"
                 onClick={() => {
-                  setMode('login');
+                  setMode("login");
                   resetMessage();
-                  setNewPassword('');
                 }}
               >
                 Quay lại
               </button>
               <button type="submit" className="phone-submit-btn">
-                Đổi mật khẩu
+                Xác nhận
               </button>
             </div>
           </form>

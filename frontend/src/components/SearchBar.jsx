@@ -1,10 +1,20 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import SearchModal from "./SearchModal";
 
 export default function SearchBar() {
+  const navigate = useNavigate();
+
   const [isSticky, setIsSticky] = useState(false);
-  const [pickupDate, setPickupDate] = useState("");
-  const [returnDate, setReturnDate] = useState("");
-  const [pickupTime, setPickupTime] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [searchData, setSearchData] = useState({
+    location: "",
+    pickupDate: "",
+    pickupTime: "",
+    returnDate: "",
+    returnTime: "",
+  });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,11 +33,11 @@ export default function SearchBar() {
       const dropoff = new Date(now);
       dropoff.setDate(pickup.getDate() + 2);
 
-      const formatDate = (date) => {
-        const day = String(date.getDate()).padStart(2, "0");
-        const month = String(date.getMonth() + 1).padStart(2, "0");
+      const formatDateForInput = (date) => {
         const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
       };
 
       const formatTime = (date) => {
@@ -36,46 +46,82 @@ export default function SearchBar() {
         return `${hours}:${minutes}`;
       };
 
-      setPickupDate(formatDate(pickup));
-      setReturnDate(formatDate(dropoff));
-      setPickupTime(formatTime(now));
+      setSearchData({
+        location: "",
+        pickupDate: formatDateForInput(pickup),
+        pickupTime: formatTime(now),
+        returnDate: formatDateForInput(dropoff),
+        returnTime: "23:00",
+      });
     };
 
     updateDateTime();
-    const interval = setInterval(updateDateTime, 60000);
-    return () => clearInterval(interval);
   }, []);
 
+  const formatDateDisplay = (dateStr) => {
+    if (!dateStr) return "";
+    const [y, m, d] = dateStr.split("-");
+    return `${d}/${m}/${y}`;
+  };
+
   return (
-    <div className={isSticky ? "search-box sticky-search" : "search-box"}>
-      <div className="search-item">
-        <p>Địa điểm nhận xe</p>
-        <button type="button" className="location-btn">
-          Chọn địa điểm tìm xe
+    <>
+      <div className={isSticky ? "search-box sticky-search" : "search-box"}>
+        <div className="search-item">
+          <p>Địa điểm nhận xe</p>
+          <button
+            type="button"
+            className="location-btn"
+            onClick={() => setIsModalOpen(true)}
+          >
+            {searchData.location || "Chọn khu vực tìm xe"}
+          </button>
+        </div>
+
+        <div className="search-item">
+          <p>Ngày nhận xe</p>
+          <strong>{formatDateDisplay(searchData.pickupDate)}</strong>
+        </div>
+
+        <div className="search-item">
+          <p>Giờ nhận xe</p>
+          <strong>{searchData.pickupTime}</strong>
+        </div>
+
+        <div className="search-item">
+          <p>Ngày trả xe</p>
+          <strong>{formatDateDisplay(searchData.returnDate)}</strong>
+        </div>
+
+        <div className="search-item">
+          <p>Giờ trả xe</p>
+          <strong>{searchData.returnTime}</strong>
+        </div>
+
+        <button
+          className="search-btn"
+          onClick={() =>
+            navigate("/tim-kiem", {
+              state: searchData,
+            })
+          }
+        >
+          TÌM XE
         </button>
       </div>
 
-      <div className="search-item">
-        <p>Ngày nhận xe</p>
-        <strong>{pickupDate}</strong>
-      </div>
-
-      <div className="search-item">
-        <p>Giờ nhận xe</p>
-        <strong>{pickupTime}</strong>
-      </div>
-
-      <div className="search-item">
-        <p>Ngày trả xe</p>
-        <strong>{returnDate}</strong>
-      </div>
-
-      <div className="search-item">
-        <p>Giờ trả xe</p>
-        <strong>23:00</strong>
-      </div>
-
-      <button className="search-btn">TÌM XE</button>
-    </div>
+      <SearchModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        searchData={searchData}
+        onApply={(form) => {
+          setSearchData(form);
+          setIsModalOpen(false);
+          navigate("/tim-kiem", {
+            state: form,
+          });
+        }}
+      />
+    </>
   );
 }

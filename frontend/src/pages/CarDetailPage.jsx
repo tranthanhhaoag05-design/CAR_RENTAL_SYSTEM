@@ -1,18 +1,45 @@
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import { addOrder, parsePriceToNumber } from "../data/orderDB";
 import SiteFooter from "../components/SiteFooter";
-import {
-  carsNow,
-  suggestCars,
-  luxuryCars,
-  extraBrandCars,
-} from "../data/mockData";
+import { getVehicleById } from "../services/vehicleService";
+import { mapVehicleFromApi } from "../utils/mapVehicleFromApi";
+import { createBookingApi } from "../services/bookingService";
+
+const formatDateTime = (date) => {
+  const pad = (n) => String(n).padStart(2, "0");
+
+  return (
+    date.getFullYear() +
+    "-" +
+    pad(date.getMonth() + 1) +
+    "-" +
+    pad(date.getDate()) +
+    " " +
+    pad(date.getHours()) +
+    ":" +
+    pad(date.getMinutes()) +
+    ":" +
+    pad(date.getSeconds())
+  );
+};
+
+
 
 export default function CarDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const [car, setCar] = useState(null);
+  const [loadingCar, setLoadingCar] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [selectedImage, setSelectedImage] = useState("");
+
+  const [documents, setDocuments] = useState({
+    cccd_front: null,
+    cccd_back: null,
+    gplx: null,
+  });
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [bookingPopup, setBookingPopup] = useState({
@@ -26,58 +53,146 @@ export default function CarDetailPage() {
     window.scrollTo(0, 0);
   }, [id]);
 
-  const allCars = useMemo(
-    () => [...carsNow, ...suggestCars, ...luxuryCars, ...extraBrandCars],
-    []
-  );
+  useEffect(() => {
+    const fetchCar = async () => {
+      try {
+        setLoadingCar(true);
+        const data = await getVehicleById(id);
+        if (data) {
+          setCar(mapVehicleFromApi(data));
+        } else {
+          setCar(null);
+        }
+      } catch (error) {
+        console.error("Lỗi lấy chi tiết xe:", error);
+        setCar(null);
+      } finally {
+        setLoadingCar(false);
+      }
+    };
 
-  const car = allCars.find((item) => String(item.id) === String(id));
+    fetchCar();
+  }, [id]);
 
   const address =
     car?.address ||
-    `Số 299, Đường Cách Mạng Tháng Tám, ${car?.location}, Thành phố Hồ Chí Minh`;
+    `Số 299, Đường Cách Mạng Tháng Tám, ${car?.location || "Hồ Chí Minh"}, Thành phố Hồ Chí Minh`;
 
-  const gallery = car
-    ? car.gallery?.length
+  const gallery = useMemo(() => {
+    if (!car) return [];
+    return car.gallery?.length
       ? car.gallery
-      : [car.image, car.image, car.image, car.image, car.image]
-    : [];
-
-  const [selectedImage, setSelectedImage] = useState(gallery[0] || "");
+      : [car.image, car.image, car.image, car.image, car.image];
+  }, [car]);
 
   useEffect(() => {
     if (gallery.length > 0) {
       setSelectedImage(gallery[0]);
     }
-  }, [id]);
+  }, [gallery]);
 
-  const handleRentNow = () => {
+  const formatDateTime = (date) => {
+  const pad = (n) => String(n).padStart(2, "0");
+
+  return (
+    date.getFullYear() +
+    "-" +
+    pad(date.getMonth() + 1) +
+    "-" +
+    pad(date.getDate()) +
+    " " +
+    pad(date.getHours()) +
+    ":" +
+    pad(date.getMinutes()) +
+    ":" +
+    pad(date.getSeconds())
+  );
+};
+
+  const handleRentNow = async () => {
     const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+    const token = localStorage.getItem("access_token");
 
-    if (!currentUser) {
+    if (!currentUser || !token) {
       setShowLoginModal(true);
       return;
     }
 
-    addOrder({
-      userId: currentUser.id,
-      userName: currentUser.name,
-      userPhone: currentUser.phone,
-      carId: car.id,
-      carName: car.name,
-      location: car.location,
-      priceText: car.priceDay,
-      total: parsePriceToNumber(car.priceDay),
-      pickupAddress: address,
-    });
+    if (!car) return;
 
-    setBookingPopup({
-      open: true,
-      title: "Đặt xe thành công",
-      message: "Đơn của bạn đã được tạo. Vui lòng chờ tài xế nhận đơn.",
-      note: "Bạn có thể theo dõi trạng thái trong lịch sử đặt xe.",
-    });
+    if (!documents.cccd_front || !documents.cccd_back || !documents.gplx) {
+      setBookingPopup({
+        open: true,
+        title: "Thiếu giấy tờ",
+        message: "Vui lòng tải lên đầy đủ CCCD mặt trước, CCCD mặt sau và bằng lái xe.",
+        note: "Đây là thông tin bắt buộc để đặt xe theo yêu cầu hệ thống.",
+      });
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      const now = new Date();
+      const end = new Date(now);
+      end.setDate(end.getDate() + 2);
+
+      const formData = new FormData();
+      formData.append("start_date", formatDateTime(now));
+      formData.append("end_date", formatDateTime(end));
+      formData.append("vehicle_id", Number(id));
+      formData.append("service_type", "self_drive");
+      formData.append("total_price", Number(car.price_per_day || 0));
+      formData.append(
+        "deposit_amount",
+        Math.round(Number(car.price_per_day || 0) * 0.3)
+      );
+      formData.append("payment_status", "unpaid");
+      formData.append("status", "pending");
+
+      formData.append("cccd_front", documents.cccd_front);
+      formData.append("cccd_back", documents.cccd_back);
+      formData.append("gplx", documents.gplx);
+
+      await createBookingApi(formData, token);
+
+      setBookingPopup({
+        open: true,
+        title: "Đặt xe thành công",
+        message: "Đơn của bạn đã được tạo. Vui lòng chờ xác nhận.",
+        note: "Bạn có thể theo dõi trạng thái trong lịch sử đặt xe.",
+      });
+
+      setDocuments({
+        cccd_front: null,
+        cccd_back: null,
+        gplx: null,
+      });
+    } catch (error) {
+      const apiMessage =
+        error?.response?.data?.message || "Không thể tạo đơn đặt xe";
+      setBookingPopup({
+        open: true,
+        title: "Đặt xe thất bại",
+        message: apiMessage,
+        note: "Vui lòng kiểm tra lại thông tin hoặc thử lại sau.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (loadingCar) {
+    return (
+      <>
+        <Navbar />
+        <div className="container" style={{ padding: "80px 0" }}>
+          <h2>Đang tải thông tin xe...</h2>
+        </div>
+        <SiteFooter />
+      </>
+    );
+  }
 
   if (!car) {
     return (
@@ -226,8 +341,54 @@ export default function CarDetailPage() {
                   <div className="booking-location-value">{address}</div>
                 </div>
 
-                <button className="booking-btn" onClick={handleRentNow}>
-                  Đặt xe ngay
+                <div className="booking-location-box">
+                  <label>CCCD mặt trước</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) =>
+                      setDocuments((prev) => ({
+                        ...prev,
+                        cccd_front: e.target.files?.[0] || null,
+                      }))
+                    }
+                  />
+                </div>
+
+                <div className="booking-location-box">
+                  <label>CCCD mặt sau</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) =>
+                      setDocuments((prev) => ({
+                        ...prev,
+                        cccd_back: e.target.files?.[0] || null,
+                      }))
+                    }
+                  />
+                </div>
+
+                <div className="booking-location-box">
+                  <label>Bằng lái xe</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) =>
+                      setDocuments((prev) => ({
+                        ...prev,
+                        gplx: e.target.files?.[0] || null,
+                      }))
+                    }
+                  />
+                </div>
+
+                <button
+                  className="booking-btn"
+                  onClick={handleRentNow}
+                  disabled={submitting}
+                >
+                  {submitting ? "Đang đặt xe..." : "Đặt xe ngay"}
                 </button>
               </div>
             </aside>
@@ -258,6 +419,7 @@ export default function CarDetailPage() {
               >
                 Để sau
               </button>
+
               <button
                 className="login-required-confirm"
                 onClick={() => navigate("/dang-nhap")}
@@ -284,7 +446,9 @@ export default function CarDetailPage() {
           }}
           onClick={() => {
             setBookingPopup((prev) => ({ ...prev, open: false }));
-            navigate("/lich-su-dat-xe");
+            if (bookingPopup.title === "Đặt xe thành công") {
+              navigate("/lich-su-dat-xe");
+            }
           }}
         >
           <div
@@ -302,7 +466,10 @@ export default function CarDetailPage() {
           >
             <div
               style={{
-                background: "linear-gradient(180deg, #34d399, #16a34a)",
+                background:
+                  bookingPopup.title === "Đặt xe thành công"
+                    ? "linear-gradient(180deg, #34d399, #16a34a)"
+                    : "linear-gradient(180deg, #fb7185, #ef4444)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -311,7 +478,7 @@ export default function CarDetailPage() {
                 fontWeight: "800",
               }}
             >
-              ✓
+              {bookingPopup.title === "Đặt xe thành công" ? "✓" : "!"}
             </div>
 
             <div style={{ padding: "28px 24px 22px" }}>
@@ -362,7 +529,9 @@ export default function CarDetailPage() {
                 <button
                   onClick={() => {
                     setBookingPopup((prev) => ({ ...prev, open: false }));
-                    navigate("/lich-su-dat-xe");
+                    if (bookingPopup.title === "Đặt xe thành công") {
+                      navigate("/lich-su-dat-xe");
+                    }
                   }}
                   style={{
                     minWidth: "120px",
@@ -373,10 +542,15 @@ export default function CarDetailPage() {
                     fontWeight: "700",
                     color: "#fff",
                     cursor: "pointer",
-                    background: "linear-gradient(135deg, #22c55e, #16a34a)",
+                    background:
+                      bookingPopup.title === "Đặt xe thành công"
+                        ? "linear-gradient(135deg, #22c55e, #16a34a)"
+                        : "linear-gradient(135deg, #ef4444, #dc2626)",
                   }}
                 >
-                  Xem lịch sử
+                  {bookingPopup.title === "Đặt xe thành công"
+                    ? "Xem lịch sử"
+                    : "Đóng"}
                 </button>
               </div>
             </div>

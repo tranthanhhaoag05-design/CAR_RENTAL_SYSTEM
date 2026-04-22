@@ -1,7 +1,10 @@
 import Navbar from "../components/Navbar";
 import SiteFooter from "../components/SiteFooter";
-import { useState } from "react";
-import { addConsignment } from "../data/orderDB";
+import { useEffect, useState } from "react";
+import {
+  createConsignmentApi,
+  getConsignmentsApi,
+} from "../services/consignmentService";
 
 export default function ConsignmentPage() {
   const [form, setForm] = useState({
@@ -17,6 +20,10 @@ export default function ConsignmentPage() {
     image: "",
   });
 
+  const [consignments, setConsignments] = useState([]);
+  const [loadingList, setLoadingList] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
   const [popup, setPopup] = useState({
     open: false,
     type: "info",
@@ -25,8 +32,41 @@ export default function ConsignmentPage() {
     note: "",
   });
 
-  const handleSubmitConsignment = () => {
+  const resetForm = () => {
+    setForm({
+      brand: "Hãng xe",
+      model: "Mẫu xe",
+      year: "2026",
+      city: "Hồ Chí Minh",
+      rentalDays: "Chủ yếu cho thuê",
+      price: "",
+      seats: "4",
+      transmission: "Số tự động",
+      fuel: "Xăng",
+      image: "",
+    });
+  };
+
+  const loadConsignments = async () => {
+    try {
+      setLoadingList(true);
+      const result = await getConsignmentsApi();
+      const data = Array.isArray(result?.data) ? result.data : [];
+      setConsignments(data);
+    } catch (error) {
+      console.error("Lỗi lấy danh sách ký gửi:", error);
+    } finally {
+      setLoadingList(false);
+    }
+  };
+
+  useEffect(() => {
+    loadConsignments();
+  }, []);
+
+  const handleSubmitConsignment = async () => {
     const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+    const token = localStorage.getItem("access_token");
 
     if (!currentUser) {
       setPopup({
@@ -59,43 +99,47 @@ export default function ConsignmentPage() {
       return;
     }
 
-    addConsignment({
-      ownerId: currentUser.id,
-      ownerName: currentUser.name,
-      ownerPhone: currentUser.phone,
-      brand: form.brand,
-      model: form.model,
-      year: form.year,
-      city: form.city,
-      rentalDays: form.rentalDays,
-      price: Number(form.price),
-      seats: Number(form.seats),
-      transmission: form.transmission,
-      fuel: form.fuel,
-      image: form.image,
-      status: "pending",
-    });
+    try {
+      setSubmitting(true);
 
-    setPopup({
-      open: true,
-      type: "success",
-      title: "Ký gửi thành công",
-      message: "Đăng ký ký gửi xe thành công. Vui lòng chờ admin xét duyệt.",
-      note: "GoDriver sẽ thông báo cho bạn khi xe của bạn được duyệt.",
-    });
+      const payload = {
+        user_id: currentUser.id,
+        car_name: `${form.brand} ${form.model} ${form.year}`.trim(),
+        brand: form.brand,
+        plate_number: null,
+        seats: Number(form.seats),
+        transmission: form.transmission,
+        fuel: form.fuel,
+        price_per_day: Number(form.price),
+        image_url: form.image || null,
+        status: "pending",
+      };
 
-    setForm({
-      brand: "Hãng xe",
-      model: "Mẫu xe",
-      year: "2026",
-      city: "Hồ Chí Minh",
-      rentalDays: "Chủ yếu cho thuê",
-      price: "",
-      seats: "4",
-      transmission: "Số tự động",
-      fuel: "Xăng",
-      image: "",
-    });
+      await createConsignmentApi(payload, token);
+
+      setPopup({
+        open: true,
+        type: "success",
+        title: "Ký gửi thành công",
+        message: "Đăng ký ký gửi xe thành công. Vui lòng chờ admin xét duyệt.",
+        note: "GoDriver sẽ thông báo cho bạn khi xe của bạn được duyệt.",
+      });
+
+      resetForm();
+      loadConsignments();
+    } catch (error) {
+      const apiMessage =
+        error?.response?.data?.message || "Không thể gửi ký gửi xe";
+      setPopup({
+        open: true,
+        type: "error",
+        title: "Gửi thất bại",
+        message: apiMessage,
+        note: "Vui lòng kiểm tra lại dữ liệu hoặc thử lại sau.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -123,23 +167,24 @@ export default function ConsignmentPage() {
                   <option>Kia</option>
                   <option>Mazda</option>
                   <option>VinFast</option>
+                  <option>Honda</option>
+                  <option>Ford</option>
+                  <option>Mercedes</option>
+                  <option>BMW</option>
+                  <option>Mitsubishi</option>
                 </select>
               </div>
 
               <div className="consign-field">
                 <label>Mẫu xe</label>
-                <select
+                <input
+                  type="text"
+                  placeholder="Ví dụ: Vios, Accent, CX-5..."
                   value={form.model}
                   onChange={(e) =>
                     setForm({ ...form, model: e.target.value })
                   }
-                >
-                  <option>Mẫu xe</option>
-                  <option>Accent</option>
-                  <option>Vios</option>
-                  <option>CX-5</option>
-                  <option>VF7</option>
-                </select>
+                />
               </div>
 
               <div className="consign-field">
@@ -154,6 +199,8 @@ export default function ConsignmentPage() {
                   <option>2025</option>
                   <option>2024</option>
                   <option>2023</option>
+                  <option>2022</option>
+                  <option>2021</option>
                 </select>
               </div>
             </div>
@@ -183,6 +230,7 @@ export default function ConsignmentPage() {
                 <option>Chủ yếu cho thuê</option>
                 <option>10 ngày</option>
                 <option>20 ngày</option>
+                <option>30 ngày</option>
               </select>
             </div>
 
@@ -257,8 +305,9 @@ export default function ConsignmentPage() {
             <button
               className="consign-main-btn"
               onClick={handleSubmitConsignment}
+              disabled={submitting}
             >
-              Đăng ký ngay
+              {submitting ? "Đang gửi..." : "Đăng ký ngay"}
             </button>
           </div>
 
@@ -376,6 +425,32 @@ export default function ConsignmentPage() {
               <div>✕</div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="consign-support">
+        <div className="container">
+          <h2>Danh sách ký gửi đã gửi</h2>
+
+          {loadingList ? (
+            <p>Đang tải danh sách ký gửi...</p>
+          ) : consignments.length === 0 ? (
+            <p>Chưa có xe ký gửi nào.</p>
+          ) : (
+            <div className="consign-tech-grid">
+              {consignments.map((item) => (
+                <div className="consign-tech-card" key={item.id}>
+                  <p><strong>{item.car_name}</strong></p>
+                  <p>Hãng: {item.brand || "Chưa rõ"}</p>
+                  <p>Giá/ngày: {item.price_per_day?.toLocaleString?.() || 0}đ</p>
+                  <p>Ghế: {item.seats || "-"}</p>
+                  <p>Hộp số: {item.transmission || "-"}</p>
+                  <p>Nhiên liệu: {item.fuel || "-"}</p>
+                  <p>Trạng thái: {item.status}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

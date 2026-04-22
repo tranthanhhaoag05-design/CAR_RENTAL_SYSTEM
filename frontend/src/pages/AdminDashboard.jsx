@@ -1,31 +1,29 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { getVehicles } from "../services/vehicleService";
 import {
-  initOrders,
-  getAllOrders,
-  getTotalRevenue,
-  updateOrderStatus,
-  initConsignments,
-  getAllConsignments,
-  updateConsignmentStatus,
-} from "../data/orderDB";
+  getAdminBookingsApi,
+} from "../services/bookingService";
+import api from "../services/api";
 import {
-  fakeUsers,
-  initCars,
-  getActiveCars,
-  getDeletedCars,
-  addCar,
-  updateCar,
-  softDeleteCar,
-  restoreCar,
-} from "../data/fakeDB";
+  getConsignmentsApi,
+  updateConsignmentStatusApi,
+} from "../services/consignmentService";
+import { mapVehicleFromApi } from "../utils/mapVehicleFromApi";
 import "../styles/pages/admin-dashboard.css";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("cars");
   const [cars, setCars] = useState([]);
-  const [trashCars, setTrashCars] = useState([]);
+  const [trashCars] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [users, setUsers] = useState([]);
   const [consignments, setConsignments] = useState([]);
+
+  const [loadingCars, setLoadingCars] = useState(true);
+  const [loadingOrders, setLoadingOrders] = useState(true);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [loadingConsignments, setLoadingConsignments] = useState(true);
+
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState({
     id: null,
@@ -35,17 +33,91 @@ export default function AdminDashboard() {
     price: "",
   });
 
-  const refreshData = () => {
-    setCars(getActiveCars());
-    setTrashCars(getDeletedCars());
-    setOrders(getAllOrders());
-    setConsignments(getAllConsignments());
+  const token = localStorage.getItem("access_token");
+
+  const refreshCars = async () => {
+    try {
+      setLoadingCars(true);
+      const data = await getVehicles();
+      const mapped = data.map(mapVehicleFromApi).map((car) => ({
+        ...car,
+        price: Number(car.price_per_day || 0),
+      }));
+      setCars(mapped);
+    } catch (error) {
+      console.error("Lỗi lấy danh sách xe:", error);
+      setCars([]);
+    } finally {
+      setLoadingCars(false);
+    }
+  };
+
+  const refreshOrders = async () => {
+    try {
+      setLoadingOrders(true);
+      const result = await getAdminBookingsApi(token);
+      const data = Array.isArray(result?.data)
+        ? result.data
+        : Array.isArray(result)
+        ? result
+        : [];
+      setOrders(data);
+    } catch (error) {
+      console.error("Lỗi lấy danh sách đơn admin:", error);
+      setOrders([]);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
+  const refreshUsers = async () => {
+    try {
+      setLoadingUsers(true);
+      const result = await api.get("/admin/users", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = Array.isArray(result?.data?.data)
+        ? result.data.data
+        : Array.isArray(result?.data)
+        ? result.data
+        : [];
+
+      setUsers(data);
+    } catch (error) {
+      console.error("Lỗi lấy danh sách user:", error);
+      setUsers([]);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const refreshConsignments = async () => {
+    try {
+      setLoadingConsignments(true);
+      const result = await getConsignmentsApi();
+      const data = Array.isArray(result?.data) ? result.data : [];
+      setConsignments(data);
+    } catch (error) {
+      console.error("Lỗi lấy danh sách ký gửi:", error);
+      setConsignments([]);
+    } finally {
+      setLoadingConsignments(false);
+    }
+  };
+
+  const refreshData = async () => {
+    await Promise.all([
+      refreshCars(),
+      refreshOrders(),
+      refreshUsers(),
+      refreshConsignments(),
+    ]);
   };
 
   useEffect(() => {
-    initCars();
-    initOrders();
-    initConsignments();
     refreshData();
   }, []);
 
@@ -62,28 +134,7 @@ export default function AdminDashboard() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    if (!form.name || !form.brand || !form.location || !form.price) return;
-
-    if (isEditing) {
-      updateCar({
-        id: form.id,
-        name: form.name,
-        brand: form.brand,
-        location: form.location,
-        price: Number(form.price),
-        deleted: false,
-      });
-    } else {
-      addCar({
-        name: form.name,
-        brand: form.brand,
-        location: form.location,
-        price: Number(form.price),
-      });
-    }
-
-    refreshData();
+    alert("Backend hiện chưa có API thêm/sửa xe cho admin.");
     resetForm();
   };
 
@@ -93,54 +144,64 @@ export default function AdminDashboard() {
       name: car.name,
       brand: car.brand,
       location: car.location,
-      price: car.price,
+      price: car.price_per_day || 0,
     });
     setIsEditing(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDelete = (id) => {
-    softDeleteCar(id);
-    refreshData();
+  const handleDelete = () => {
+    alert("Backend hiện chưa có API xóa xe cho admin.");
   };
 
-  const handleRestore = (id) => {
-    restoreCar(id);
-    refreshData();
+  const handleRestore = () => {
+    alert("Backend hiện chưa có API khôi phục xe.");
   };
 
-  const handleDriverAccept = (orderId) => {
-    updateOrderStatus(orderId, "accepted", "Tài xế Nguyễn Văn A");
-    refreshData();
+  const handleDriverAccept = () => {
+    alert("Backend hiện chưa nối API nhận đơn/gán tài xế ở dashboard này.");
   };
 
-  const handleCompleteOrder = (orderId) => {
-    updateOrderStatus(orderId, "completed");
-    refreshData();
+  const handleCompleteOrder = () => {
+    alert("Backend hiện chưa nối API hoàn tất đơn ở dashboard này.");
   };
 
-  const handleApproveConsignment = (item) => {
-    addCar({
-      name: item.model || "Xe ký gửi",
-      brand: item.brand || "Chưa rõ",
-      location: item.city || "Chưa rõ",
-      price: Number(item.price || 0),
-      seats: Number(item.seats || 4),
-      transmission: item.transmission || "Số tự động",
-      fuel: item.fuel || "Xăng",
-      image: item.image || "",
-    });
-
-    updateConsignmentStatus(item.id, "approved");
-    refreshData();
+  const handleApproveConsignment = async (item) => {
+    try {
+      await updateConsignmentStatusApi(item.id, "approved", token);
+      await refreshConsignments();
+    } catch (error) {
+      alert(
+        error?.response?.data?.message || "Không thể duyệt ký gửi lúc này."
+      );
+    }
   };
 
-  const handleRejectConsignment = (id) => {
-    updateConsignmentStatus(id, "rejected");
-    refreshData();
+  const handleRejectConsignment = async (id) => {
+    try {
+      await updateConsignmentStatusApi(id, "rejected", token);
+      await refreshConsignments();
+    } catch (error) {
+      alert(
+        error?.response?.data?.message || "Không thể từ chối ký gửi lúc này."
+      );
+    }
   };
 
-  const totalRevenue = getTotalRevenue();
+  const totalRevenue = useMemo(() => {
+    return orders.reduce(
+      (sum, order) => sum + Number(order.total_price || 0),
+      0
+    );
+  }, [orders]);
+
+  const pendingConsignments = consignments.filter(
+    (item) => item.status === "pending"
+  );
+
+  const customerList = users.filter(
+    (u) => u.role === "user" || u.role === "customer"
+  );
 
   const getStatusText = (status) => {
     switch (status) {
@@ -152,8 +213,12 @@ export default function AdminDashboard() {
         return "Hoàn tất";
       case "cancelled":
         return "Đã hủy";
+      case "pending":
+        return "Đang chờ xác nhận";
+      case "confirmed":
+        return "Đã xác nhận";
       default:
-        return status;
+        return status || "Không xác định";
     }
   };
 
@@ -166,7 +231,7 @@ export default function AdminDashboard() {
           </div>
           <h1 className="admin-title">Trang quản trị</h1>
           <p className="admin-subtitle">
-            Quản lý xe, khách hàng, doanh thu thật, ký gửi xe và khôi phục dữ liệu từ thùng rác
+            Quản lý xe, khách hàng, doanh thu, ký gửi xe và dữ liệu hệ thống
           </p>
         </div>
       </div>
@@ -174,12 +239,12 @@ export default function AdminDashboard() {
       <div className="admin-cards">
         <div className="admin-card gradient-blue">
           <h3>🚗 Tổng xe đang hoạt động</h3>
-          <p>{cars.length}</p>
+          <p>{loadingCars ? "..." : cars.length}</p>
         </div>
 
         <div className="admin-card gradient-green">
           <h3>👤 Khách hàng</h3>
-          <p>{fakeUsers.filter((u) => u.role === "user").length}</p>
+          <p>{loadingUsers ? "..." : customerList.length}</p>
         </div>
 
         <div className="admin-card gradient-orange">
@@ -194,7 +259,7 @@ export default function AdminDashboard() {
 
         <div className="admin-card gradient-blue">
           <h3>📩 Ký gửi chờ duyệt</h3>
-          <p>{consignments.filter((item) => item.status === "pending").length}</p>
+          <p>{loadingConsignments ? "..." : pendingConsignments.length}</p>
         </div>
       </div>
 
@@ -303,7 +368,9 @@ export default function AdminDashboard() {
                     <td>{car.name}</td>
                     <td>{car.brand}</td>
                     <td>{car.location}</td>
-                    <td>{Number(car.price).toLocaleString("vi-VN")}đ</td>
+                    <td>
+                      {Number(car.price_per_day || 0).toLocaleString("vi-VN")}đ
+                    </td>
                     <td>
                       <div className="action-buttons">
                         <button
@@ -326,7 +393,7 @@ export default function AdminDashboard() {
                   </tr>
                 ))}
 
-                {cars.length === 0 && (
+                {!loadingCars && cars.length === 0 && (
                   <tr>
                     <td colSpan="5" className="empty-row">
                       Chưa có xe nào
@@ -352,13 +419,21 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {fakeUsers.map((user) => (
+              {customerList.map((user) => (
                 <tr key={user.id}>
-                  <td>{user.name}</td>
-                  <td>{user.phone}</td>
+                  <td>{user.full_name || user.name || "-"}</td>
+                  <td>{user.phone_number || user.phone || "-"}</td>
                   <td>{user.role}</td>
                 </tr>
               ))}
+
+              {!loadingUsers && customerList.length === 0 && (
+                <tr>
+                  <td colSpan="3" className="empty-row">
+                    Chưa có dữ liệu khách hàng để hiển thị
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -366,7 +441,7 @@ export default function AdminDashboard() {
 
       {activeTab === "orders" && (
         <div className="admin-section">
-          <h2>Đơn thuê xe / doanh thu thật</h2>
+          <h2>Đơn thuê xe / doanh thu</h2>
 
           <table className="admin-table">
             <thead>
@@ -383,68 +458,41 @@ export default function AdminDashboard() {
             <tbody>
               {orders.map((order) => (
                 <tr key={order.id}>
-                  <td>{order.userName}</td>
-                  <td>{order.carName}</td>
-                  <td>{order.location}</td>
-                  <td>{Number(order.total || 0).toLocaleString("vi-VN")}đ</td>
+                  <td>{order.customer?.full_name || `User #${order.customer_id}`}</td>
+                  <td>{order.vehicle?.name || `Xe #${order.vehicle_id}`}</td>
+                  <td>{order.vehicle?.location || "-"}</td>
                   <td>
-                    <span
-                      style={{
-                        fontWeight: 600,
-                        color:
-                          order.status === "waiting_driver"
-                            ? "#f59e0b"
-                            : order.status === "accepted"
-                            ? "#3b82f6"
-                            : order.status === "completed"
-                            ? "#16a34a"
-                            : "#ef4444",
-                      }}
-                    >
+                    {Number(order.total_price || 0).toLocaleString("vi-VN")}đ
+                  </td>
+                  <td>
+                    <span style={{ fontWeight: 600 }}>
                       {getStatusText(order.status)}
                     </span>
                   </td>
-                  <td>{order.driverName || "Chưa có"}</td>
+                  <td>{order.driver?.full_name || "Chưa có"}</td>
                   <td>
                     <div className="action-buttons">
-                      {order.status === "waiting_driver" && (
-                        <button
-                          className="btn-edit"
-                          onClick={() => handleDriverAccept(order.id)}
-                        >
-                          Tài xế nhận đơn
-                        </button>
-                      )}
-
-                      {order.status === "accepted" && (
-                        <button
-                          className="btn-primary"
-                          onClick={() => handleCompleteOrder(order.id)}
-                        >
-                          Hoàn tất
-                        </button>
-                      )}
-
-                      {order.status === "completed" && (
-                        <span style={{ color: "#16a34a", fontWeight: 700 }}>
-                          Đã hoàn tất
-                        </span>
-                      )}
-
-                      {order.status === "cancelled" && (
-                        <span style={{ color: "#ef4444", fontWeight: 700 }}>
-                          Đã hủy
-                        </span>
-                      )}
+                      <button
+                        className="btn-edit"
+                        onClick={() => handleDriverAccept(order.id)}
+                      >
+                        Nhận đơn
+                      </button>
+                      <button
+                        className="btn-primary"
+                        onClick={() => handleCompleteOrder(order.id)}
+                      >
+                        Hoàn tất
+                      </button>
                     </div>
                   </td>
                 </tr>
               ))}
 
-              {orders.length === 0 && (
+              {!loadingOrders && orders.length === 0 && (
                 <tr>
                   <td colSpan="7" className="empty-row">
-                    Chưa có đơn thuê xe nào
+                    Chưa có dữ liệu đơn thuê trong dashboard này
                   </td>
                 </tr>
               )}
@@ -461,11 +509,11 @@ export default function AdminDashboard() {
             <thead>
               <tr>
                 <th>Người gửi</th>
+                <th>Tên xe</th>
                 <th>Hãng</th>
-                <th>Mẫu xe</th>
-                <th>Năm SX</th>
-                <th>Thành phố</th>
-                <th>Số ngày cho thuê</th>
+                <th>Giá/ngày</th>
+                <th>Số ghế</th>
+                <th>Hộp số</th>
                 <th>Trạng thái</th>
                 <th>Thao tác</th>
               </tr>
@@ -473,12 +521,14 @@ export default function AdminDashboard() {
             <tbody>
               {consignments.map((item) => (
                 <tr key={item.id}>
-                  <td>{item.ownerName || "Người dùng"}</td>
+                  <td>{item.user?.full_name || `User #${item.user_id}`}</td>
+                  <td>{item.car_name || "Chưa rõ"}</td>
                   <td>{item.brand || "Chưa rõ"}</td>
-                  <td>{item.model || "Chưa rõ"}</td>
-                  <td>{item.year || "Chưa rõ"}</td>
-                  <td>{item.city || "Chưa rõ"}</td>
-                  <td>{item.rentalDays || "Chưa rõ"}</td>
+                  <td>
+                    {Number(item.price_per_day || 0).toLocaleString("vi-VN")}đ
+                  </td>
+                  <td>{item.seats || "-"}</td>
+                  <td>{item.transmission || "-"}</td>
                   <td>
                     <span
                       style={{
@@ -518,7 +568,7 @@ export default function AdminDashboard() {
 
                       {item.status === "approved" && (
                         <span style={{ color: "#16a34a", fontWeight: 700 }}>
-                          Đã thêm xe
+                          Đã duyệt
                         </span>
                       )}
 
@@ -532,7 +582,7 @@ export default function AdminDashboard() {
                 </tr>
               ))}
 
-              {consignments.length === 0 && (
+              {!loadingConsignments && consignments.length === 0 && (
                 <tr>
                   <td colSpan="8" className="empty-row">
                     Chưa có yêu cầu ký gửi xe nào
@@ -564,7 +614,7 @@ export default function AdminDashboard() {
                   <td>{car.name}</td>
                   <td>{car.brand}</td>
                   <td>{car.location}</td>
-                  <td>{Number(car.price).toLocaleString("vi-VN")}đ</td>
+                  <td>{Number(car.price || 0).toLocaleString("vi-VN")}đ</td>
                   <td>
                     <button
                       className="btn-restore"

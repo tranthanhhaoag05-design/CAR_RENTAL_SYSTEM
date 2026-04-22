@@ -8,7 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class Vehicle extends Model
 {
     use HasFactory;
+
+    // Đang dùng bảng cars (giữ nguyên cho đúng với DB hiện tại)
     protected $table = 'cars';
+
+    // Nếu bảng không có created_at / updated_at thì bật dòng này
+    // public $timestamps = false;
 
     protected $fillable = [
         'plate_number', 
@@ -18,10 +23,22 @@ class Vehicle extends Model
         'transmission', 
         'price_per_day', 
         'status', 
-        'image_url'
+        'image_url',
+
+        // 🔥 thêm sẵn để sau này dùng với FE (mockData)
+        'location',
+        'seats',
+        'fuel',
+        'tag'
     ];
 
-    // Mối quan hệ: 1 chiếc xe có thể có nhiều đơn đặt xe
+    // Ép kiểu dữ liệu (không bắt buộc nhưng nên có)
+    protected $casts = [
+        'price_per_day' => 'integer',
+        'seats' => 'integer',
+    ];
+
+    // Mối quan hệ: 1 xe có nhiều booking
     public function bookings()
     {
         return $this->hasMany(Booking::class);
